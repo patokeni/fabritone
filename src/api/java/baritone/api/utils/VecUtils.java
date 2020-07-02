@@ -48,9 +48,9 @@ public final class VecUtils {
         if (shape.isEmpty()) {
             return getBlockPosCenter(pos);
         }
-        double xDiff = (shape.getMinimum(Direction.Axis.X) + shape.getMaximum(Direction.Axis.X)) / 2;
-        double yDiff = (shape.getMinimum(Direction.Axis.Y) + shape.getMaximum(Direction.Axis.Y)) / 2;
-        double zDiff = (shape.getMinimum(Direction.Axis.Z) + shape.getMaximum(Direction.Axis.Z)) / 2;
+        double xDiff = (shape.getMin(Direction.Axis.X) + shape.getMax(Direction.Axis.X)) / 2;
+        double yDiff = (shape.getMin(Direction.Axis.Y) + shape.getMax(Direction.Axis.Y)) / 2;
+        double zDiff = (shape.getMin(Direction.Axis.Z) + shape.getMax(Direction.Axis.Z)) / 2;
         if (Double.isNaN(xDiff) || Double.isNaN(yDiff) || Double.isNaN(zDiff)) {
             throw new IllegalStateException(b + " " + pos + " " + shape);
         }

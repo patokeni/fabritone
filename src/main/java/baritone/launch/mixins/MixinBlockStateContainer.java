@@ -20,7 +20,7 @@ package baritone.launch.mixins;
 import baritone.utils.accessor.IBitArray;
 import baritone.utils.accessor.IBlockStateContainer;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.PackedIntegerArray;
+import net.minecraft.util.collection.PackedIntegerArray;
 import net.minecraft.world.chunk.Palette;
 import net.minecraft.world.chunk.PalettedContainer;
 import org.spongepowered.asm.mixin.Mixin;

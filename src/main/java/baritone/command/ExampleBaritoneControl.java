@@ -34,10 +34,7 @@ import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.command.manager.ICommandManager;
 import baritone.command.argument.CommandArguments;
 import baritone.command.manager.CommandManager;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
+import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 
@@ -79,17 +76,19 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
         if (settings.echoCommands.value) {
             String msg = command + rest;
             String toDisplay = settings.censorRanCommands.value ? command + " ..." : msg;
-            Text component = new LiteralText(String.format("> %s", toDisplay));
-            component.getStyle()
-                    .setColor(Formatting.WHITE)
+            LiteralText component = new LiteralText(String.format("> %s", toDisplay));
+            Style componentStyle = Style.EMPTY;
+            componentStyle = componentStyle
+                    .withColor(Formatting.WHITE)
                     .setHoverEvent(new HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
                             new LiteralText("Click to rerun command")
                     ))
-                    .setClickEvent(new ClickEvent(
+                    .withClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
                             FORCE_COMMAND_PREFIX + msg
                     ));
+            component.setStyle(componentStyle);
             logDirect(component);
         }
     }

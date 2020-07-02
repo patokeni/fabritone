@@ -18,10 +18,10 @@
 package baritone.api.utils;
 
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.container.SlotActionType;
 import net.minecraft.entity.player.PlayerEntity;
 import baritone.api.BaritoneAPI;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;

@@ -114,7 +114,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 .filter(pos -> !(BlockStateInterface.get(ctx, pos).getBlock() instanceof AirBlock)) // after breaking a block, it takes mineGoalUpdateInterval ticks for it to actually update this list =(
                 .min(Comparator.comparingDouble(ctx.playerFeet()::getSquaredDistance));
         baritone.getInputOverrideHandler().clearAllKeys();
-        if (shaft.isPresent() && ctx.player().onGround) {
+        if (shaft.isPresent() && ctx.player().isOnGround()) {
             BlockPos pos = shaft.get();
             BlockState state = baritone.bsi.get0(pos);
             if (!MovementHelper.avoidBreaking(baritone.bsi, pos.getX(), pos.getY(), pos.getZ(), state)) {
@@ -308,7 +308,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             if (entity instanceof ItemEntity) {
                 ItemEntity ei = (ItemEntity) entity;
                 if (filter.has(ei.getStack())) {
-                    ret.add(new BlockPos(entity));
+                    ret.add(entity.getBlockPos());
                 }
             }
         }
@@ -399,7 +399,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
                 .filter(pos -> !blacklist.contains(pos))
 
-                .sorted(Comparator.comparingDouble(new BlockPos(ctx.getBaritone().getPlayerContext().player())::getSquaredDistance))
+                .sorted(Comparator.comparingDouble(ctx.getBaritone().getPlayerContext().player().getBlockPos()::getSquaredDistance))
                 .collect(Collectors.toList());
 
         if (locs.size() > max) {

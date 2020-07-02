@@ -42,6 +42,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
+import net.minecraft.world.World;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -96,11 +97,11 @@ public class MovementFall extends Movement {
         Block destBlock = destState.getBlock();
         boolean isWater = destState.getFluidState().getFluid() instanceof WaterFluid;
         if (!isWater && willPlaceBucket() && !playerFeet.equals(dest)) {
-            if (!PlayerInventory.isValidHotbarIndex(ctx.player().inventory.getSlotWithStack(STACK_BUCKET_WATER)) || ctx.world().getDimension().isNether()) {
+            if (!PlayerInventory.isValidHotbarIndex(ctx.player().inventory.getSlotWithStack(STACK_BUCKET_WATER)) || ctx.world().getRegistryKey() == World.NETHER) {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
-            if (ctx.player().getY() - dest.getY() < ctx.playerController().getBlockReachDistance() && !ctx.player().onGround) {
+            if (ctx.player().getY() - dest.getY() < ctx.playerController().getBlockReachDistance() && !ctx.player().isOnGround()) {
                 ctx.player().inventory.selectedSlot = ctx.player().inventory.getSlotWithStack(STACK_BUCKET_WATER);
 
                 targetRotation = new Rotation(toDest.getYaw(), 90.0F);
@@ -135,7 +136,7 @@ public class MovementFall extends Movement {
         }
         Vec3d destCenter = VecUtils.getBlockPosCenter(dest); // we are moving to the 0.5 center not the edge (like if we were falling on a ladder)
         if (Math.abs(ctx.player().getX() + ctx.player().getVelocity().x - destCenter.x) > 0.1 || Math.abs(ctx.player().getZ() + ctx.player().getVelocity().z - destCenter.z) > 0.1) {
-            if (!ctx.player().onGround && Math.abs(ctx.player().getVelocity().y) > 0.4) {
+            if (!ctx.player().isOnGround() && Math.abs(ctx.player().getVelocity().y) > 0.4) {
                 state.setInput(Input.SNEAK, true);
             }
             state.setInput(Input.MOVE_FORWARD, true);
@@ -147,7 +148,7 @@ public class MovementFall extends Movement {
             double dist = Math.abs(avoid.getX() * (destCenter.x - avoid.getX() / 2.0 - ctx.player().getX())) + Math.abs(avoid.getZ() * (destCenter.z - avoid.getZ() / 2.0 - ctx.player().getZ()));
             if (dist < 0.6) {
                 state.setInput(Input.MOVE_FORWARD, true);
-            } else if (!ctx.player().onGround) {
+            } else if (!ctx.player().isOnGround()) {
                 state.setInput(Input.SNEAK, false);
             }
         }

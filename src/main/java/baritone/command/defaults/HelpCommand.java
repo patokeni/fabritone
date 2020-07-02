@@ -25,10 +25,7 @@ import baritone.api.command.exception.CommandNotFoundException;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.helpers.Paginator;
 import baritone.api.command.helpers.TabCompleteHelper;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
+import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 
 import java.util.Arrays;
@@ -58,22 +55,31 @@ public class HelpCommand extends Command {
                     command -> {
                         String names = String.join("/", command.getNames());
                         String name = command.getNames().get(0);
-                        Text shortDescComponent = new LiteralText(" - " + command.getShortDesc());
-                        shortDescComponent.getStyle().setColor(Formatting.DARK_GRAY);
-                        Text namesComponent = new LiteralText(names);
-                        namesComponent.getStyle().setColor(Formatting.WHITE);
-                        Text hoverComponent = new LiteralText("");
-                        hoverComponent.getStyle().setColor(Formatting.GRAY);
+                        LiteralText shortDescComponent = new LiteralText(" - " + command.getShortDesc());
+                        Style shortDescComponentStyle = Style.EMPTY;
+                        shortDescComponentStyle.withColor(Formatting.DARK_GRAY);
+                        shortDescComponent.setStyle(shortDescComponentStyle);
+                        LiteralText namesComponent = new LiteralText(names);
+                        Style namesComponentStyle = Style.EMPTY;
+                        namesComponentStyle.withColor(Formatting.WHITE);
+                        namesComponent.setStyle(namesComponentStyle);
+                        LiteralText hoverComponent = new LiteralText("");
+                        Style hoverComponentStyle = Style.EMPTY;
+                        hoverComponentStyle = hoverComponentStyle.withColor(Formatting.GRAY);
+                        hoverComponent.setStyle(hoverComponentStyle);
                         hoverComponent.append(namesComponent);
                         hoverComponent.append("\n" + command.getShortDesc());
                         hoverComponent.append("\n\nClick to view full help");
                         String clickCommand = FORCE_COMMAND_PREFIX + String.format("%s %s", label, command.getNames().get(0));
-                        Text component = new LiteralText(name);
-                        component.getStyle().setColor(Formatting.GRAY);
+                        LiteralText component = new LiteralText(name);
+                        Style componentStyle = Style.EMPTY;
+                        componentStyle = componentStyle.withColor(Formatting.GRAY);
+                        component.setStyle(componentStyle);
                         component.append(shortDescComponent);
-                        component.getStyle()
+                        componentStyle = componentStyle
                                 .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent))
-                                .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, clickCommand));
+                                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, clickCommand));
+                        component.setStyle(componentStyle);
                         return component;
                     },
                     FORCE_COMMAND_PREFIX + label
@@ -88,11 +94,13 @@ public class HelpCommand extends Command {
             logDirect("");
             command.getLongDesc().forEach(this::logDirect);
             logDirect("");
-            Text returnComponent = new LiteralText("Click to return to the help menu");
-            returnComponent.getStyle().setClickEvent(new ClickEvent(
+            LiteralText returnComponent = new LiteralText("Click to return to the help menu");
+            Style returnComponentStyle = Style.EMPTY;
+            returnComponentStyle = returnComponentStyle.withClickEvent(new ClickEvent(
                     ClickEvent.Action.RUN_COMMAND,
                     FORCE_COMMAND_PREFIX + label
             ));
+            returnComponent.setStyle(returnComponentStyle);
             logDirect(returnComponent);
         }
     }

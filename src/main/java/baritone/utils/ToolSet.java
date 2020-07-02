@@ -101,7 +101,7 @@ public class ToolSet {
         boolean bestSilkTouch = false;
         BlockState blockState = b.getDefaultState();
         for (int i = 0; i < 9; i++) {
-            ItemStack itemStack = player.inventory.getInvStack(i);
+            ItemStack itemStack = player.inventory.getStack(i);
             double speed = calculateSpeedVsBlock(itemStack, blockState);
             boolean silkTouch = hasSilkTouch(itemStack);
             if (speed > highestSpeed) {
@@ -130,7 +130,7 @@ public class ToolSet {
      * @return A double containing the destruction ticks with the best tool
      */
     private double getBestDestructionTime(Block b) {
-        ItemStack stack = player.inventory.getInvStack(getBestSlot(b, false));
+        ItemStack stack = player.inventory.getStack(getBestSlot(b, false));
         return calculateSpeedVsBlock(stack, b.getDefaultState()) * avoidanceMultiplier(b);
     }
 
@@ -152,7 +152,7 @@ public class ToolSet {
             return -1;
         }
 
-        float speed = item.getMiningSpeed(state);
+        float speed = item.getMiningSpeedMultiplier(state);
         if (speed > 1) {
             int effLevel = EnchantmentHelper.getLevel(Enchantments.EFFICIENCY, item);
             if (effLevel > 0 && !item.isEmpty()) {
@@ -161,7 +161,7 @@ public class ToolSet {
         }
 
         speed /= hardness;
-        if (state.getMaterial().canBreakByHand() || (!item.isEmpty() && item.isEffectiveOn(state))) {
+        if (state.getMaterial().isSolid() || (!item.isEmpty() && item.isEffectiveOn(state))) {
             return speed / 30;
         } else {
             return speed / 100;

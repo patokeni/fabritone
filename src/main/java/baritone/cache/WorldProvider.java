@@ -22,6 +22,9 @@ import baritone.api.cache.IWorldProvider;
 import baritone.api.utils.Helper;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.WorldSavePath;
+import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import org.apache.commons.lang3.SystemUtils;
 
@@ -52,9 +55,10 @@ public class WorldProvider implements IWorldProvider, Helper {
     /**
      * Called when a new world is initialized to discover the
      *
+     * @param worldRef The Reference to the World Registry
      * @param dimension The ID of the world's dimension
      */
-    public final void initWorld(DimensionType dimension) {
+    public final void initWorld(RegistryKey<World> worldRef, DimensionType dimension) {
         File directory;
         File readme;
 
@@ -62,8 +66,8 @@ public class WorldProvider implements IWorldProvider, Helper {
 
         // If there is an integrated server running (Aka Singleplayer) then do magic to find the world save file
         if (mc.isInSingleplayer()) {
-            ServerWorld localServerWorld = integratedServer.getWorld(dimension);
-            directory = dimension.getSaveDirectory(localServerWorld.getSaveHandler().getWorldDir());
+            ServerWorld localServerWorld = integratedServer.getWorld(worldRef);
+            directory = dimension.getSaveDirectory(worldRef, integratedServer.getSavePath(WorldSavePath.ROOT).toFile());
 
             // Gets the "depth" of this directory relative the the game's run directory, 2 is the location of the world
             if (directory.toPath().relativize(mc.runDirectory.toPath()).getNameCount() != 2) {
@@ -89,7 +93,7 @@ public class WorldProvider implements IWorldProvider, Helper {
         } catch (IOException ignored) {}
 
         // We will actually store the world data in a subfolder: "DIM<id>"
-        Path dir = new File(directory, "DIM" + dimension.getRawId()).toPath();
+        Path dir = new File(directory, "DIM" + getDimensionId(worldRef)).toPath();
         if (!Files.exists(dir)) {
             try {
                 Files.createDirectories(dir);
@@ -98,8 +102,12 @@ public class WorldProvider implements IWorldProvider, Helper {
 
         System.out.println("Baritone world data dir: " + dir);
         synchronized (worldCache) {
-            this.currentWorld = worldCache.computeIfAbsent(dir, d -> new WorldData(d, dimension.getRawId()));
+            this.currentWorld = worldCache.computeIfAbsent(dir, d -> new WorldData(d, getDimensionId(worldRef)));
         }
+    }
+
+    public static int getDimensionId(RegistryKey<World> worldRef) {
+        return worldRef == World.OVERWORLD ? 0 : worldRef == World.NETHER ? -1 : worldRef == World.END ? 1 : worldRef.hashCode();
     }
 
     public final void closeWorld() {

@@ -90,8 +90,8 @@ repositories {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:1.15.2"
-    mappings "net.fabricmc:yarn:1.15.2+build.17:v2"
+    minecraft "com.mojang:minecraft:1.16.1"
+    mappings "net.fabricmc:yarn:1.16.1+build.19:v2"
     modImplementation "net.fabricmc:fabric-loader:0.8.9+build.203"
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
 

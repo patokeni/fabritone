@@ -30,6 +30,7 @@ import baritone.utils.ToolSet;
 import com.google.common.jimfs.PathType;
 import net.minecraft.block.*;
 import net.minecraft.block.enums.SlabType;
+import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.fluid.*;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.util.hit.BlockHitResult;
@@ -139,7 +140,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         // every block that overrides isPassable with anything more complicated than a "return true;" or "return false;"
         // has already been accounted for above
         // therefore it's safe to not construct a blockpos from our x, y, z ints and instead just pass null
-        return state.canPlaceAtSide(bsi.access, BlockPos.ORIGIN, BlockPlacementEnvironment.LAND); // workaround for future compatibility =P
+        return state.canPathfindThrough(bsi.access, BlockPos.ORIGIN, NavigationType.LAND); // workaround for future compatibility =P
     }
 
     /**
@@ -187,7 +188,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             return false;
         }
         // door, fence gate, liquid, trapdoor have been accounted for, nothing else uses the world or pos parameters
-        return state.canPlaceAtSide(access, pos, BlockPlacementEnvironment.LAND);
+        return state.canPathfindThrough(access, pos, NavigationType.LAND);
     }
 
     static boolean isReplaceable(int x, int y, int z, BlockState state, BlockStateInterface bsi) {

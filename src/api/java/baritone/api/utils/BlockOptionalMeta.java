@@ -36,6 +36,7 @@ import net.minecraft.resource.*;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
+import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 
@@ -118,6 +119,9 @@ public final class BlockOptionalMeta {
     }
 
     public boolean matches(BlockState blockstate) {
+        // Note: BlockState is somehow null in 1.16+, remedy it by setting to default state
+        blockstate = (blockstate == null ? block.getDefaultState() : blockstate);
+
         Block block = blockstate.getBlock();
         return block == this.block && stateHashes.contains(blockstate.hashCode());
     }
@@ -146,8 +150,7 @@ public final class BlockOptionalMeta {
 
     public static LootManager getManager() {
         if (manager == null) {
-            ResourcePackManager<?> rpl = new ResourcePackManager<>(ResourcePackProfile::new);
-            rpl.registerProvider(new VanillaDataPackProvider());
+            ResourcePackManager<?> rpl = new ResourcePackManager<>(ResourcePackProfile::new, new VanillaDataPackProvider(), new FileResourcePackProvider(Helper.mc.getResourcePackDir(), ResourcePackSource.PACK_SOURCE_WORLD));
             rpl.scanPacks();
             List<ResourcePack> thePacks = new ArrayList<>();
 
@@ -155,7 +158,7 @@ public final class BlockOptionalMeta {
                 ResourcePack thePack = rpl.getEnabledProfiles().iterator().next().createResourcePack();
                 thePacks.add(thePack);
             }
-            ReloadableResourceManager resourceManager = new ReloadableResourceManagerImpl(ResourceType.SERVER_DATA, null);
+            ReloadableResourceManager resourceManager = new ReloadableResourceManagerImpl(ResourceType.SERVER_DATA);
             manager = new LootManager(predicate);
             resourceManager.registerListener(manager);
             try {
@@ -173,31 +176,31 @@ public final class BlockOptionalMeta {
 
     private static synchronized List<Item> drops(Block block) {
         if (!drops.containsKey(block)) {
-            Identifier lootTableLocation = block.getDropTableId();
+            Identifier lootTableLocation = block.getLootTableId();
             if (lootTableLocation == LootTables.EMPTY) {
                 return Collections.emptyList();
             } else if (Helper.mc.getServer() != null) {
                 IntegratedServer server = Helper.mc.getServer();
-                drops.put(block, getManager().getSupplier(lootTableLocation).getDrops(
-                        new LootContext.Builder(server.getWorld(BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().player().dimension))
-                                .setRandom(new Random())
-                                .put(LootContextParameters.POSITION, BlockPos.ORIGIN)
-                                .put(LootContextParameters.TOOL, ItemStack.EMPTY)
-                                .putNullable(LootContextParameters.BLOCK_ENTITY, null)
-                                .put(LootContextParameters.BLOCK_STATE, block.getDefaultState())
+                drops.put(block, getManager().getTable(lootTableLocation).generateLoot(
+                        new LootContext.Builder(server.getWorld(BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().getRegistryKey()))
+                                .random(new Random())
+                                .parameter(LootContextParameters.POSITION, BlockPos.ORIGIN)
+                                .parameter(LootContextParameters.TOOL, ItemStack.EMPTY)
+                                .optionalParameter(LootContextParameters.BLOCK_ENTITY, null)
+                                .parameter(LootContextParameters.BLOCK_STATE, block.getDefaultState())
                                 .build(LootContextTypes.BLOCK)).stream().map(ItemStack::getItem).collect(Collectors.toList()));
                 return drops.get(block);
             } else {
                 List<Item> items = new ArrayList<>();
 
                 // the other overload for generate doesnt work in forge because forge adds code that requires a non null world
-                getManager().getSupplier(lootTableLocation).drop(
+                getManager().getTable(lootTableLocation).generateLoot(
                     new LootContext.Builder(null)
-                        .setRandom(new Random())
-                        .put(LootContextParameters.POSITION, BlockPos.ORIGIN)
-                        .put(LootContextParameters.TOOL, ItemStack.EMPTY)
-                        .putNullable(LootContextParameters.BLOCK_ENTITY, null)
-                        .put(LootContextParameters.BLOCK_STATE, block.getDefaultState())
+                        .random(new Random())
+                        .parameter(LootContextParameters.POSITION, BlockPos.ORIGIN)
+                        .parameter(LootContextParameters.TOOL, ItemStack.EMPTY)
+                        .optionalParameter(LootContextParameters.BLOCK_ENTITY, null)
+                        .parameter(LootContextParameters.BLOCK_STATE, block.getDefaultState())
                         .build(LootContextTypes.BLOCK),
                     stack -> items.add(stack.getItem())
                 );

@@ -25,7 +25,7 @@ import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidStateException;
 import baritone.api.command.argument.IArgConsumer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
+import net.minecraft.text.LiteralText;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
@@ -54,7 +54,7 @@ public class ChestsCommand extends Command {
             IRememberedInventory inv = entry.getValue();
             logDirect(pos.toString());
             for (ItemStack item : inv.getContents()) {
-                Text component = item.getName();
+                LiteralText component = (LiteralText) item.getName();
                 component.append(String.format(" x %d", item.getCount()));
                 logDirect(component);
             }

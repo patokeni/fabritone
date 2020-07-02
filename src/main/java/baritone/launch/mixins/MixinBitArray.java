@@ -18,7 +18,7 @@
 package baritone.launch.mixins;
 
 import baritone.utils.accessor.IBitArray;
-import net.minecraft.util.PackedIntegerArray;
+import net.minecraft.util.collection.PackedIntegerArray;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

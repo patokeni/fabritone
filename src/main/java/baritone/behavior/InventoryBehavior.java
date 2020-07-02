@@ -24,10 +24,10 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.container.SlotActionType;
 import net.minecraft.item.*;
-import net.minecraft.util.DefaultedList;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.Hand;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -51,7 +51,7 @@ public final class InventoryBehavior extends Behavior {
         if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
-        if (ctx.player().container != ctx.player().container) {
+        if (ctx.player().currentScreenHandler != ctx.player().currentScreenHandler) {
             // we have a crafting table or a chest or something open
             return;
         }
@@ -93,7 +93,7 @@ public final class InventoryBehavior extends Behavior {
     }
 
     private void swapWithHotBar(int inInventory, int inHotbar) {
-        ctx.playerController().windowClick(ctx.player().container.syncId, inInventory < 9 ? inInventory + 36 : inInventory, inHotbar, SlotActionType.SWAP, ctx.player());
+        ctx.playerController().windowClick(ctx.player().currentScreenHandler.syncId, inInventory < 9 ? inInventory + 36 : inInventory, inHotbar, SlotActionType.SWAP, ctx.player());
     }
 
     private int firstValidThrowaway() { // TODO offhand idk

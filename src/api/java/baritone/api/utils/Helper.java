@@ -20,7 +20,7 @@ package baritone.api.utils;
 import baritone.api.BaritoneAPI;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
+import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
 
 import java.util.Arrays;
@@ -46,16 +46,20 @@ public interface Helper {
      */
     MinecraftClient mc = MinecraftClient.getInstance();
 
-    static Text getPrefix() {
+    static LiteralText getPrefix() {
         // Inner text component
         final Calendar now = Calendar.getInstance();
         final boolean xd = now.get(Calendar.MONTH) == Calendar.APRIL && now.get(Calendar.DAY_OF_MONTH) <= 3;
-        Text baritone = new LiteralText(xd ? "Baritoe" : BaritoneAPI.getSettings().shortBaritonePrefix.value ? "B" : "Baritone");
-        baritone.getStyle().setColor(Formatting.LIGHT_PURPLE);
+        LiteralText baritone = new LiteralText(xd ? "Baritoe" : BaritoneAPI.getSettings().shortBaritonePrefix.value ? "B" : "Baritone");
+        Style baritoneStyle = Style.EMPTY;
+        baritoneStyle = baritoneStyle.withColor(Formatting.LIGHT_PURPLE);
+        baritone.setStyle(baritoneStyle);
 
         // Outer brackets
-        Text prefix = new LiteralText("");
-        prefix.getStyle().setColor(Formatting.DARK_PURPLE);
+        LiteralText prefix = new LiteralText("");
+        Style prefixStyle = Style.EMPTY;
+        prefixStyle = prefixStyle.withColor(Formatting.DARK_PURPLE);
+        prefix.setStyle(prefixStyle);
         prefix.append("[");
         prefix.append(baritone);
         prefix.append("]");
@@ -82,8 +86,8 @@ public interface Helper {
      *
      * @param components The components to send
      */
-    default void logDirect(Text... components) {
-        Text component = new LiteralText("");
+    default void logDirect(LiteralText... components) {
+        LiteralText component = new LiteralText("");
         component.append(getPrefix());
         component.append(new LiteralText(" "));
         Arrays.asList(components).forEach(component::append);
@@ -99,8 +103,10 @@ public interface Helper {
      */
     default void logDirect(String message, Formatting color) {
         Stream.of(message.split("\n")).forEach(line -> {
-            Text component = new LiteralText(line.replace("\t", "    "));
-            component.getStyle().setColor(color);
+            LiteralText component = new LiteralText(line.replace("\t", "    "));
+            Style componentStyle = Style.EMPTY;
+            componentStyle = componentStyle.withColor(color);
+            component.setStyle(componentStyle);
             logDirect(component);
         });
     }

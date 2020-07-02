@@ -25,6 +25,7 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Helper;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.behavior.PathingBehavior;
+import baritone.cache.WorldProvider;
 import baritone.pathing.path.PathExecutor;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.block.BlockState;
@@ -65,8 +66,8 @@ public final class PathRenderer implements IRenderer, Helper {
             ((GuiClick) Helper.mc.currentScreen).onRender();
         }
 
-        int thisPlayerDimension = behavior.baritone.getPlayerContext().world().getDimension().getType().getRawId();
-        int currentRenderViewDimension = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().getDimension().getType().getRawId();
+        int thisPlayerDimension = WorldProvider.getDimensionId(behavior.baritone.getPlayerContext().world().getRegistryKey());
+        int currentRenderViewDimension = WorldProvider.getDimensionId(BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().getRegistryKey());
 
         if (thisPlayerDimension != currentRenderViewDimension) {
             // this is a path for a bot in a different dimension, don't render it
@@ -239,7 +240,7 @@ public final class PathRenderer implements IRenderer, Helper {
 
                 BeaconBlockEntityRenderer.renderLightBeam(new MatrixStack(),
                         Helper.mc.getBufferBuilders().getEntityVertexConsumers(),
-                        BeaconBlockEntityRenderer.BEAM_TEX,
+                        BeaconBlockEntityRenderer.BEAM_TEXTURE,
                         partialTicks,
                         1.0f,
                         player.world.getTime(),

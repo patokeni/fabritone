@@ -39,7 +39,6 @@ import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.utils.IRenderer;
 import net.minecraft.block.Blocks;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
@@ -84,7 +83,7 @@ public class SelCommand extends Command {
             if (action == Action.POS2 && pos1 == null) {
                 throw new CommandInvalidStateException("Set pos1 first before using pos2");
             }
-            BetterBlockPos playerPos = mc.getCameraEntity() != null ? BetterBlockPos.from(new BlockPos(mc.getCameraEntity())) : ctx.playerFeet();
+            BetterBlockPos playerPos = mc.getCameraEntity() != null ? BetterBlockPos.from(mc.getCameraEntity().getBlockPos()) : ctx.playerFeet();
             BetterBlockPos pos = args.hasAny() ? args.getDatatypePost(RelativeBlockPos.INSTANCE, playerPos) : playerPos;
             args.requireMax(0);
             if (action == Action.POS1) {

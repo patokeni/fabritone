@@ -24,7 +24,7 @@ import baritone.api.utils.IPlayerContext;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.BlockPos;
 
 import java.io.IOException;
@@ -177,7 +177,7 @@ public class ContainerMemory implements IContainerMemory {
 
         public void updateFromOpenWindow(IPlayerContext ctx) {
             items.clear();
-            items.addAll(ctx.player().container.getStacks().subList(0, size));
+            items.addAll(ctx.player().currentScreenHandler.getStacks().subList(0, size));
         }
     }
 }

@@ -32,7 +32,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.container.PlayerContainer;
+import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
@@ -196,8 +196,8 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
                 baritone.getLookBehavior().updateTarget(reachable.get(), true);
                 if (knownLocations.contains(ctx.getSelectedBlock().orElse(null))) {
                     baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true); // TODO find some way to right click even if we're in an ESC menu
-                    System.out.println(ctx.player().container);
-                    if (!(ctx.player().container instanceof PlayerContainer)) {
+                    System.out.println(ctx.player().currentScreenHandler);
+                    if (!(ctx.player().currentScreenHandler instanceof PlayerScreenHandler)) {
                         return true;
                     }
                 }

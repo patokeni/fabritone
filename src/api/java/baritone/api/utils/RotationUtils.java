@@ -69,7 +69,7 @@ public final class RotationUtils {
      * @return The rotation from the origin to the destination
      */
     public static Rotation calcRotationFromCoords(BlockPos orig, BlockPos dest) {
-        return calcRotationFromVec3d(new Vec3d(orig), new Vec3d(dest));
+        return calcRotationFromVec3d(new Vec3d(orig.getX(), orig.getY(), orig.getZ()), new Vec3d(dest.getX(), dest.getY(), dest.getZ()));
     }
 
     /**
@@ -200,10 +200,10 @@ public final class RotationUtils {
             shape = VoxelShapes.fullCube();
         }
         for (Vec3d sideOffset : BLOCK_SIDE_MULTIPLIERS) {
-            double xDiff = shape.getMinimum(Direction.Axis.X) * sideOffset.x + shape.getMaximum(Direction.Axis.X) * (1 - sideOffset.x);
-            double yDiff = shape.getMinimum(Direction.Axis.Y) * sideOffset.y + shape.getMaximum(Direction.Axis.Y) * (1 - sideOffset.y);
-            double zDiff = shape.getMinimum(Direction.Axis.Z) * sideOffset.z + shape.getMaximum(Direction.Axis.Z) * (1 - sideOffset.z);
-            possibleRotation = reachableOffset(entity, pos, new Vec3d(pos).add(xDiff, yDiff, zDiff), blockReachDistance, wouldSneak);
+            double xDiff = shape.getMin(Direction.Axis.X) * sideOffset.x + shape.getMax(Direction.Axis.X) * (1 - sideOffset.x);
+            double yDiff = shape.getMin(Direction.Axis.Y) * sideOffset.y + shape.getMax(Direction.Axis.Y) * (1 - sideOffset.y);
+            double zDiff = shape.getMin(Direction.Axis.Z) * sideOffset.z + shape.getMax(Direction.Axis.Z) * (1 - sideOffset.z);
+            possibleRotation = reachableOffset(entity, pos, new Vec3d(pos.getX(), pos.getY(), pos.getZ()).add(xDiff, yDiff, zDiff), blockReachDistance, wouldSneak);
             if (possibleRotation.isPresent()) {
                 return possibleRotation;
             }

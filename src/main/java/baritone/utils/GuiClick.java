@@ -26,10 +26,11 @@ import baritone.api.utils.Helper;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
+import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -67,7 +68,7 @@ public class GuiClick extends Screen implements Helper {
     }
 
     @Override
-    public void render(int mouseX, int mouseY, float partialTicks) {
+    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         double mx = mc.mouse.getX();
         double my = mc.mouse.getY();
         my = mc.getWindow().getHeight() - my;
@@ -92,13 +93,15 @@ public class GuiClick extends Screen implements Helper {
             if (clickStart != null && !clickStart.equals(currentMouseOver)) {
                 BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().removeAllSelections();
                 BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().addSelection(BetterBlockPos.from(clickStart), BetterBlockPos.from(currentMouseOver));
-                Text component = new LiteralText("Selection made! For usage: " + Baritone.settings().prefix.value + "help sel");
-                component.getStyle()
-                        .setColor(Formatting.WHITE)
-                        .setClickEvent(new ClickEvent(
+                LiteralText component = new LiteralText("Selection made! For usage: " + Baritone.settings().prefix.value + "help sel");
+                Style componentStyle = Style.EMPTY;
+                componentStyle = componentStyle
+                        .withColor(Formatting.WHITE)
+                        .withClickEvent(new ClickEvent(
                                 ClickEvent.Action.RUN_COMMAND,
                                 FORCE_COMMAND_PREFIX + "help sel"
                         ));
+                component.setStyle(componentStyle);
                 Helper.HELPER.logDirect(component);
                 clickStart = null;
             } else {
