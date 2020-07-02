@@ -17,6 +17,7 @@
 
 package baritone.command.defaults;
 
+import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.exception.CommandException;
@@ -36,7 +37,7 @@ public class ClickCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
         baritone.openClick();
-        logDirect("aight dude");
+        logDirect("Opened Selection Gui", BaritoneAPI.getSettings().allowToast.value);
     }
 
     @Override

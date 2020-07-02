@@ -505,6 +505,23 @@ public final class Settings {
     public final Setting<Boolean> backfill = new Setting<>(false);
 
     /**
+     * Change tool depending on what block you are breaking
+     */
+    public final Setting<Boolean> autoTool = new Setting<>(true);
+
+    /**
+     * Shows popup message in the upper right corner, similarly to when you make an advancement
+     */
+    public final Setting<Boolean> allowToast = new Setting<>(true);
+
+    /**
+     * The time of how long the message in the pop-up will display
+     * <p>
+     * If below 1000L (1sec), it's better to disable this
+     */
+    public final Setting<Long> toastTimer = new Setting<>(5000L);
+
+    /**
      * Print all the debug messages to chat
      */
     public final Setting<Boolean> chatDebug = new Setting<>(false);
@@ -513,12 +530,17 @@ public final class Settings {
      * Allow chat based control of Baritone. Most likely should be disabled when Baritone is imported for use in
      * something else
      */
-    public final Setting<Boolean> chatControl = new Setting<>(true);
+    public final Setting<Boolean> chatControl = new Setting<>(false);
 
     /**
      * Some clients like Impact try to force chatControl to off, so here's a second setting to do it anyway
      */
     public final Setting<Boolean> chatControlAnyway = new Setting<>(false);
+
+    /**
+     * Indicates if Baritone is in client-mode or not
+     */
+    public final Setting<Boolean> clientMode = new Setting<>(false);
 
     /**
      * Render the path
@@ -637,10 +659,10 @@ public final class Settings {
     /**
      * The command prefix for chat control
      */
-    public final Setting<String> prefix = new Setting<>("#");
+    public final Setting<String> prefix = new Setting<>("@");
 
     /**
-     * Use a short Baritone prefix [B] instead of [Baritone] when logging to chat
+     * Use a short Baritone prefix [F] instead of [Fabritone] when logging to chat
      */
     public final Setting<Boolean> shortBaritonePrefix = new Setting<>(false);
 

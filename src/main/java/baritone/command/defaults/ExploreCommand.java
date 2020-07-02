@@ -17,6 +17,7 @@
 
 package baritone.command.defaults;
 
+import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.command.Command;
@@ -45,7 +46,7 @@ public class ExploreCommand extends Command {
                 ? args.getDatatypePost(RelativeGoalXZ.INSTANCE, ctx.playerFeet())
                 : new GoalXZ(ctx.playerFeet());
         baritone.getExploreProcess().explore(goal.getX(), goal.getZ());
-        logDirect(String.format("Exploring from %s", goal.toString()));
+        logDirect(String.format("Exploring from %s", goal.toString()), BaritoneAPI.getSettings().allowToast.value);
     }
 
     @Override

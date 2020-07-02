@@ -18,6 +18,7 @@
 package baritone.command.defaults;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.RenderEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
@@ -157,7 +158,7 @@ public class SelCommand extends Command {
                 composite.put(schematic, min.x - origin.x, min.y - origin.y, min.z - origin.z);
             }
             baritone.getBuilderProcess().build("Fill", composite, origin);
-            logDirect("Filling now");
+            logDirect("Filling now", BaritoneAPI.getSettings().allowToast.value);
         } else if (action == Action.EXPAND || action == Action.CONTRACT || action == Action.SHIFT) {
             args.requireExactly(3);
             TransformTarget transformTarget = TransformTarget.getByName(args.getString());
