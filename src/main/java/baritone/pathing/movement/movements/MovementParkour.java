@@ -246,7 +246,7 @@ public class MovementParkour extends Movement {
                 // but i did it anyway
                 return state.setStatus(MovementStatus.SUCCESS);
             }
-            if (ctx.player().getY() - ctx.playerFeet().getY() < 0.094) { // lilypads
+            if (ctx.player().y - ctx.playerFeet().getY() < 0.094) { // lilypads
                 state.setStatus(MovementStatus.SUCCESS);
             }
         } else if (!ctx.playerFeet().equals(src)) {
@@ -257,8 +257,8 @@ public class MovementParkour extends Movement {
                 }
                 // prevent jumping too late by checking for ascend
                 if (dist == 3 && !ascend) { // this is a 2 block gap, dest = src + direction * 3
-                    double xDiff = (src.x + 0.5) - ctx.player().getX();
-                    double zDiff = (src.z + 0.5) - ctx.player().getZ();
+                    double xDiff = (src.x + 0.5) - ctx.player().x;
+                    double zDiff = (src.z + 0.5) - ctx.player().z;
                     double distFromStart = Math.max(Math.abs(xDiff), Math.abs(zDiff));
                     if (distFromStart < 0.7) {
                         return state;

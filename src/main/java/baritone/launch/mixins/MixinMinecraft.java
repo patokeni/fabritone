@@ -27,13 +27,10 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -55,11 +52,9 @@ public class MixinMinecraft {
     public ClientPlayerEntity player;
     @Shadow
     public ClientWorld world;
-    @Shadow
-    public HitResult crosshairTarget;
 
     @Inject(
-            method = "<init>",
+            method = "init",
             at = @At("RETURN")
     )
     private void postInit(CallbackInfo ci) {
@@ -148,10 +143,8 @@ public class MixinMinecraft {
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )
-    private void onBlockUse(CallbackInfo ci, Hand var1[], int var2, int var3, Hand enumhand, ItemStack itemstack) {
+    private void onBlockUse(CallbackInfo ci, Hand var1[], int var2, int var3, Hand enumhand, ItemStack itemstack, BlockHitResult raytrace, int i, ActionResult enumactionresult) {
         // rightClickMouse is only for the main player
-        if (crosshairTarget.getType() == HitResult.Type.BLOCK) {
-            BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onBlockInteract(new BlockInteractEvent(((BlockHitResult) crosshairTarget).getBlockPos(), BlockInteractEvent.Type.USE));
-        }
+        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onBlockInteract(new BlockInteractEvent(raytrace.getBlockPos(), BlockInteractEvent.Type.USE));
     }
 }

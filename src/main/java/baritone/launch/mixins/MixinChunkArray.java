@@ -31,24 +31,24 @@ public abstract class MixinChunkArray implements IChunkArray {
     @Shadow
     private AtomicReferenceArray<WorldChunk> chunks;
     @Shadow
-    private int radius;
+    private int loadDistance;
     @Shadow
-    private int diameter;
+    private int loadDiameter;
     @Shadow
     private int centerChunkX;
     @Shadow
     private int centerChunkZ;
     @Shadow
-    private int loadedChunkCount;
+    private int field_19143;
 
     @Shadow
-    protected abstract boolean isInRadius(int x, int z);
+    protected abstract boolean hasChunk(int x, int z);
 
     @Shadow
-    protected abstract int getIndex(int x, int z);
+    protected abstract int index(int x, int z);
 
     @Shadow
-    protected abstract void set(int index, WorldChunk chunk);
+    protected abstract void unload(int index, WorldChunk chunk);
 
     @Override
     public int centerX() {
@@ -62,7 +62,7 @@ public abstract class MixinChunkArray implements IChunkArray {
 
     @Override
     public int viewDistance() {
-        return radius;
+        return loadDistance;
     }
 
     @Override
@@ -80,12 +80,12 @@ public abstract class MixinChunkArray implements IChunkArray {
             WorldChunk chunk = copyingFrom.get(k);
             if (chunk != null) {
                 ChunkPos chunkpos = chunk.getPos();
-                if (isInRadius(chunkpos.x, chunkpos.z)) {
-                    int index = getIndex(chunkpos.x, chunkpos.z);
+                if (hasChunk(chunkpos.x, chunkpos.z)) {
+                    int index = index(chunkpos.x, chunkpos.z);
                     if (chunks.get(index) != null) {
                         throw new IllegalStateException("Doing this would mutate the client's REAL loaded chunks?!");
                     }
-                    set(index, chunk);
+                    unload(index, chunk);
                 }
             }
         }

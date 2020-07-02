@@ -28,7 +28,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.LootManager;
 import net.minecraft.loot.LootTables;
-import net.minecraft.loot.condition.LootConditionManager;
 import net.minecraft.loot.context.LootContext;
 import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.loot.context.LootContextTypes;
@@ -54,7 +53,6 @@ public final class BlockOptionalMeta {
     private final ImmutableSet<Integer> stackHashes;
     private static final Pattern pattern = Pattern.compile("^(.+?)(?::(\\d+))?$");
     private static LootManager manager;
-    private static LootConditionManager predicate = new LootConditionManager();
     private static Map<Block, List<Item>> drops = new HashMap<>();
 
     public BlockOptionalMeta(Block block) {
@@ -156,7 +154,7 @@ public final class BlockOptionalMeta {
                 thePacks.add(thePack);
             }
             ReloadableResourceManager resourceManager = new ReloadableResourceManagerImpl(ResourceType.SERVER_DATA, null);
-            manager = new LootManager(predicate);
+            manager = new LootManager();
             resourceManager.registerListener(manager);
             try {
                 resourceManager.beginReload(new ThreadPerTaskExecutor(Thread::new), new ThreadPerTaskExecutor(Thread::new), thePacks, CompletableFuture.completedFuture(Unit.INSTANCE)).get();
@@ -165,10 +163,6 @@ public final class BlockOptionalMeta {
             }
         }
         return manager;
-    }
-
-    public static LootConditionManager getPredicateManager() {
-        return predicate;
     }
 
     private static synchronized List<Item> drops(Block block) {

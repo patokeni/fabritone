@@ -70,9 +70,9 @@ public class GuiClick extends Screen implements Helper {
     public void render(int mouseX, int mouseY, float partialTicks) {
         double mx = mc.mouse.getX();
         double my = mc.mouse.getY();
-        my = mc.getWindow().getHeight() - my;
-        my *= mc.getWindow().getFramebufferHeight() / (double) mc.getWindow().getHeight();
-        mx *= mc.getWindow().getFramebufferWidth() / (double) mc.getWindow().getWidth();
+        my = mc.window.getHeight() - my;
+        my *= mc.window.getFramebufferHeight() / (double) mc.window.getHeight();
+        mx *= mc.window.getFramebufferWidth() / (double) mc.window.getWidth();
         Vec3d near = toWorld(mx, my, 0);
         Vec3d far = toWorld(mx, my, 1); // "Use 0.945 that's what stack overflow says" - leijurv
         if (near != null && far != null) {

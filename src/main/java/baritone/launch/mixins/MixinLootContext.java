@@ -19,7 +19,6 @@ package baritone.launch.mixins;
 
 import baritone.api.utils.BlockOptionalMeta;
 import net.minecraft.loot.LootManager;
-import net.minecraft.loot.condition.LootConditionManager;
 import net.minecraft.loot.context.LootContext;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
@@ -56,19 +55,5 @@ public class MixinLootContext {
             return BlockOptionalMeta.getManager();
         }
         return server.getLootManager();
-    }
-
-    @Redirect(
-            method = "build",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/server/MinecraftServer;getPredicateManager()Lnet/minecraft/loot/condition/LootConditionManager;"
-            )
-    )
-    private LootConditionManager getLootPredicateManager(MinecraftServer server) {
-        if (server == null) {
-            return BlockOptionalMeta.getPredicateManager();
-        }
-        return server.getPredicateManager();
     }
 }
