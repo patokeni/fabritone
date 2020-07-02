@@ -15,15 +15,28 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.launch;
+package baritone.launch.mixins;
 
-import org.spongepowered.asm.mixin.Mixins;
-import org.spongepowered.asm.mixin.connect.IMixinConnector;
+import baritone.utils.accessor.IPlayerControllerMP;
+import net.minecraft.client.network.ClientPlayerInteractionManager;
+import net.minecraft.util.math.BlockPos;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.gen.Invoker;
 
-public class BaritoneMixinConnector implements IMixinConnector {
+@Mixin(ClientPlayerInteractionManager.class)
+public abstract class MixinPlayerController implements IPlayerControllerMP {
 
+    @Accessor
     @Override
-    public void connect() {
-        Mixins.addConfiguration("mixins.baritone.json");
-    }
+    public abstract void setBreakingBlock(boolean breakingBlock);
+
+    @Accessor
+    @Override
+    public abstract BlockPos getCurrentBreakingPos();
+
+    @Invoker
+    @Override
+    public abstract void callSyncSelectedSlot();
+
 }

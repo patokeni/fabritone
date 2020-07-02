@@ -21,12 +21,13 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FireBlock;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.Direction;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.*;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
 
 import java.util.Optional;
 
@@ -176,11 +177,11 @@ public final class RotationUtils {
              *
              * or if you're a normal person literally all this does it ensure that we don't nudge the pitch to a normal level
              */
-            Rotation hypothetical = new Rotation(entity.rotationYaw, entity.rotationPitch + 0.0001F);
+            Rotation hypothetical = new Rotation(entity.yaw, entity.pitch + 0.0001F);
             if (wouldSneak) {
                 // the concern here is: what if we're looking at it now, but as soon as we start sneaking we no longer are
-                RayTraceResult result = RayTraceUtils.rayTraceTowards(entity, hypothetical, blockReachDistance, true);
-                if (result != null && result.getType() == RayTraceResult.Type.BLOCK && ((BlockRayTraceResult) result).getPos().equals(pos)) {
+                HitResult result = RayTraceUtils.rayTraceTowards(entity, hypothetical, blockReachDistance, true);
+                if (result != null && result.getType() == HitResult.Type.BLOCK && ((BlockHitResult) result).getBlockPos().equals(pos)) {
                     return Optional.of(hypothetical); // yes, if we sneaked we would still be looking at the block
                 }
             } else {
@@ -194,14 +195,14 @@ public final class RotationUtils {
         }
 
         BlockState state = entity.world.getBlockState(pos);
-        VoxelShape shape = state.getShape(entity.world, pos);
+        VoxelShape shape = state.getOutlineShape(entity.world, pos);
         if (shape.isEmpty()) {
             shape = VoxelShapes.fullCube();
         }
         for (Vec3d sideOffset : BLOCK_SIDE_MULTIPLIERS) {
-            double xDiff = shape.getStart(Direction.Axis.X) * sideOffset.x + shape.getEnd(Direction.Axis.X) * (1 - sideOffset.x);
-            double yDiff = shape.getStart(Direction.Axis.Y) * sideOffset.y + shape.getEnd(Direction.Axis.Y) * (1 - sideOffset.y);
-            double zDiff = shape.getStart(Direction.Axis.Z) * sideOffset.z + shape.getEnd(Direction.Axis.Z) * (1 - sideOffset.z);
+            double xDiff = shape.getMinimum(Direction.Axis.X) * sideOffset.x + shape.getMaximum(Direction.Axis.X) * (1 - sideOffset.x);
+            double yDiff = shape.getMinimum(Direction.Axis.Y) * sideOffset.y + shape.getMaximum(Direction.Axis.Y) * (1 - sideOffset.y);
+            double zDiff = shape.getMinimum(Direction.Axis.Z) * sideOffset.z + shape.getMaximum(Direction.Axis.Z) * (1 - sideOffset.z);
             possibleRotation = reachableOffset(entity, pos, new Vec3d(pos).add(xDiff, yDiff, zDiff), blockReachDistance, wouldSneak);
             if (possibleRotation.isPresent()) {
                 return possibleRotation;
@@ -222,15 +223,15 @@ public final class RotationUtils {
      * @return The optional rotation
      */
     public static Optional<Rotation> reachableOffset(Entity entity, BlockPos pos, Vec3d offsetPos, double blockReachDistance, boolean wouldSneak) {
-        Vec3d eyes = wouldSneak ? RayTraceUtils.inferSneakingEyePosition(entity) : entity.getEyePosition(1.0F);
-        Rotation rotation = calcRotationFromVec3d(eyes, offsetPos, new Rotation(entity.rotationYaw, entity.rotationPitch));
-        RayTraceResult result = RayTraceUtils.rayTraceTowards(entity, rotation, blockReachDistance, wouldSneak);
+        Vec3d eyes = wouldSneak ? RayTraceUtils.inferSneakingEyePosition(entity) : entity.getCameraPosVec(1.0F);
+        Rotation rotation = calcRotationFromVec3d(eyes, offsetPos, new Rotation(entity.yaw, entity.pitch));
+        HitResult result = RayTraceUtils.rayTraceTowards(entity, rotation, blockReachDistance, wouldSneak);
         //System.out.println(result);
-        if (result != null && result.getType() == RayTraceResult.Type.BLOCK) {
-            if (((BlockRayTraceResult) result).getPos().equals(pos)) {
+        if (result != null && result.getType() == HitResult.Type.BLOCK) {
+            if (((BlockHitResult) result).getBlockPos().equals(pos)) {
                 return Optional.of(rotation);
             }
-            if (entity.world.getBlockState(pos).getBlock() instanceof FireBlock && ((BlockRayTraceResult) result).getPos().equals(pos.down())) {
+            if (entity.world.getBlockState(pos).getBlock() instanceof FireBlock && ((BlockHitResult) result).getBlockPos().equals(pos.down())) {
                 return Optional.of(rotation);
             }
         }

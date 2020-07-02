@@ -17,20 +17,28 @@
 
 package baritone.api.utils;
 
+import baritone.api.BaritoneAPI;
 import baritone.api.utils.accessor.IItemStack;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.resources.*;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.loot.LootManager;
+import net.minecraft.loot.LootTables;
+import net.minecraft.loot.condition.LootConditionManager;
+import net.minecraft.loot.context.LootContext;
+import net.minecraft.loot.context.LootContextParameters;
+import net.minecraft.loot.context.LootContextTypes;
+import net.minecraft.resource.*;
+import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.storage.loot.*;
+import net.minecraft.util.registry.Registry;
 
-import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.MatchResult;
@@ -45,18 +53,18 @@ public final class BlockOptionalMeta {
     private final ImmutableSet<Integer> stateHashes;
     private final ImmutableSet<Integer> stackHashes;
     private static final Pattern pattern = Pattern.compile("^(.+?)(?::(\\d+))?$");
-    private static LootTableManager manager;
-    private static LootPredicateManager predicate = new LootPredicateManager();
+    private static LootManager manager;
+    private static LootConditionManager predicate = new LootConditionManager();
     private static Map<Block, List<Item>> drops = new HashMap<>();
 
-    public BlockOptionalMeta(@Nonnull Block block) {
+    public BlockOptionalMeta(Block block) {
         this.block = block;
         this.blockstates = getStates(block);
         this.stateHashes = getStateHashes(blockstates);
         this.stackHashes = getStackHashes(blockstates);
     }
 
-    public BlockOptionalMeta(@Nonnull String selector) {
+    public BlockOptionalMeta(String selector) {
         Matcher matcher = pattern.matcher(selector);
 
         if (!matcher.find()) {
@@ -71,8 +79,8 @@ public final class BlockOptionalMeta {
         stackHashes = getStackHashes(blockstates);
     }
 
-    private static Set<BlockState> getStates(@Nonnull Block block) {
-        return new HashSet<>(block.getStateContainer().getValidStates());
+    private static Set<BlockState> getStates(Block block) {
+        return new HashSet<>(block.getStateManager().getStates());
     }
 
     private static ImmutableSet<Integer> getStateHashes(Set<BlockState> blockstates) {
@@ -87,9 +95,14 @@ public final class BlockOptionalMeta {
         //noinspection ConstantConditions
         return ImmutableSet.copyOf(
                 blockstates.stream()
-                        .flatMap(state -> drops(state.getBlock())
-                                .stream()
-                                .map(item -> new ItemStack(item, 1))
+                        .flatMap(state -> {
+                                    List<Item> originDrops = Lists.newArrayList(), dropData = drops(state.getBlock());
+                                    originDrops.add(state.getBlock().asItem());
+                                    if (dropData != null && !dropData.isEmpty()) {
+                                        originDrops.addAll(dropData);
+                                    }
+                                    return originDrops.stream().map(item -> new ItemStack(item ,1));
+                                }
                         )
                         .map(stack -> ((IItemStack) (Object) stack).getBaritoneHash())
                         .toArray(Integer[]::new)
@@ -100,11 +113,11 @@ public final class BlockOptionalMeta {
         return block;
     }
 
-    public boolean matches(@Nonnull Block block) {
+    public boolean matches(Block block) {
         return block == this.block;
     }
 
-    public boolean matches(@Nonnull BlockState blockstate) {
+    public boolean matches(BlockState blockstate) {
         Block block = blockstate.getBlock();
         return block == this.block && stateHashes.contains(blockstate.hashCode());
     }
@@ -131,17 +144,22 @@ public final class BlockOptionalMeta {
         return null;
     }
 
-    public static LootTableManager getManager() {
+    public static LootManager getManager() {
         if (manager == null) {
-            ResourcePackList rpl = new ResourcePackList<>(ResourcePackInfo::new);
-            rpl.addPackFinder(new ServerPackFinder());
-            rpl.reloadPacksFromFinders();
-            IResourcePack thePack = ((ResourcePackInfo) rpl.getAllPacks().iterator().next()).getResourcePack();
-            IReloadableResourceManager resourceManager = new SimpleReloadableResourceManager(ResourcePackType.SERVER_DATA, null);
-            manager = new LootTableManager(predicate);
-            resourceManager.addReloadListener(manager);
+            ResourcePackManager<?> rpl = new ResourcePackManager<>(ResourcePackProfile::new);
+            rpl.registerProvider(new VanillaDataPackProvider());
+            rpl.scanPacks();
+            List<ResourcePack> thePacks = new ArrayList<>();
+
+            while (rpl.getEnabledProfiles() != null && rpl.getEnabledProfiles().iterator().hasNext()) {
+                ResourcePack thePack = rpl.getEnabledProfiles().iterator().next().createResourcePack();
+                thePacks.add(thePack);
+            }
+            ReloadableResourceManager resourceManager = new ReloadableResourceManagerImpl(ResourceType.SERVER_DATA, null);
+            manager = new LootManager(predicate);
+            resourceManager.registerListener(manager);
             try {
-                resourceManager.reloadResourcesAndThen(new ThreadPerTaskExecutor(Thread::new), new ThreadPerTaskExecutor(Thread::new), Collections.singletonList(thePack), CompletableFuture.completedFuture(Unit.INSTANCE)).get();
+                resourceManager.beginReload(new ThreadPerTaskExecutor(Thread::new), new ThreadPerTaskExecutor(Thread::new), thePacks, CompletableFuture.completedFuture(Unit.INSTANCE)).get();
             } catch (Exception exception) {
                 throw new RuntimeException(exception);
             }
@@ -149,31 +167,46 @@ public final class BlockOptionalMeta {
         return manager;
     }
 
-    public static LootPredicateManager getPredicateManager() {
+    public static LootConditionManager getPredicateManager() {
         return predicate;
     }
 
-    private static synchronized List<Item> drops(Block b) {
-        return drops.computeIfAbsent(b, block -> {
-            ResourceLocation lootTableLocation = block.getLootTable();
+    private static synchronized List<Item> drops(Block block) {
+        if (!drops.containsKey(block)) {
+            Identifier lootTableLocation = block.getDropTableId();
             if (lootTableLocation == LootTables.EMPTY) {
                 return Collections.emptyList();
+            } else if (Helper.mc.getServer() != null) {
+                IntegratedServer server = Helper.mc.getServer();
+                drops.put(block, getManager().getSupplier(lootTableLocation).getDrops(
+                        new LootContext.Builder(server.getWorld(BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().player().dimension))
+                                .setRandom(new Random())
+                                .put(LootContextParameters.POSITION, BlockPos.ORIGIN)
+                                .put(LootContextParameters.TOOL, ItemStack.EMPTY)
+                                .putNullable(LootContextParameters.BLOCK_ENTITY, null)
+                                .put(LootContextParameters.BLOCK_STATE, block.getDefaultState())
+                                .build(LootContextTypes.BLOCK)).stream().map(ItemStack::getItem).collect(Collectors.toList()));
+                return drops.get(block);
             } else {
                 List<Item> items = new ArrayList<>();
 
                 // the other overload for generate doesnt work in forge because forge adds code that requires a non null world
-                getManager().getLootTableFromLocation(lootTableLocation).generate(
+                getManager().getSupplier(lootTableLocation).drop(
                     new LootContext.Builder(null)
-                        .withRandom(new Random())
-                        .withParameter(LootParameters.POSITION, BlockPos.ZERO)
-                        .withParameter(LootParameters.TOOL, ItemStack.EMPTY)
-                        .withNullableParameter(LootParameters.BLOCK_ENTITY, null)
-                        .withParameter(LootParameters.BLOCK_STATE, block.getDefaultState())
-                        .build(LootParameterSets.BLOCK),
+                        .setRandom(new Random())
+                        .put(LootContextParameters.POSITION, BlockPos.ORIGIN)
+                        .put(LootContextParameters.TOOL, ItemStack.EMPTY)
+                        .putNullable(LootContextParameters.BLOCK_ENTITY, null)
+                        .put(LootContextParameters.BLOCK_STATE, block.getDefaultState())
+                        .build(LootContextTypes.BLOCK),
                     stack -> items.add(stack.getItem())
                 );
                 return items;
             }
-        });
+        } else if (drops.get(block) != null && !drops.get(block).isEmpty()) {
+            return drops.get(block);
+        } else {
+            return Lists.newArrayList();
+        }
     }
 }

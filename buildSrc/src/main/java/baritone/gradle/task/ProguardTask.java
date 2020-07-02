@@ -135,9 +135,7 @@ public class ProguardTask extends BaritoneGradleTask {
     }
 
     private Stream<File> acquireDependencies() {
-        return getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("launch").getRuntimeClasspath().getFiles()
-            .stream()
-            .filter(File::isFile);
+        return getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("main").getRuntimeClasspath().getFiles().stream().filter(File::isFile);
     }
 
     private void proguardApi() throws Exception {

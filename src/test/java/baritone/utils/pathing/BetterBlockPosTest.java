@@ -18,8 +18,8 @@
 package baritone.utils.pathing;
 
 import baritone.api.utils.BetterBlockPos;
-import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

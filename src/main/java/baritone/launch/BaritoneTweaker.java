@@ -15,13 +15,18 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils.accessor;
+package baritone.launch;
 
-import net.minecraft.block.BlockState;
+import org.spongepowered.asm.mixin.Mixins;
 
-public interface IPalettedContainer {
+/**
+ * @author Brady
+ * @since 7/31/2018
+ */
+public class BaritoneTweaker implements Runnable {
 
-    BlockState getAtPalette(int index);
-
-    int[] storageArray();
+    @Override
+    public void run() {
+        Mixins.addConfiguration("mixins.baritone.json");
+    }
 }

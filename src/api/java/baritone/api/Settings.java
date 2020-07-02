@@ -21,17 +21,17 @@ import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.TypeUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3i;
-import net.minecraft.util.text.ITextComponent;
 
 import java.awt.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -186,9 +186,9 @@ public final class Settings {
      * <p>
      * If a schematic asks for air at a certain position, and that position currently contains a block on this list, it will be treated as correct.
      */
-    public final Setting<List<Block>> buildIgnoreBlocks = new Setting<>(new ArrayList<>(Arrays.asList(
-
-    )));
+    public final Setting<List<Block>> buildIgnoreBlocks = new Setting<>(new ArrayList<>(
+            // Leave Empty by Default
+    ));
 
     /**
      * If this is true, the builder will treat all non-air blocks as correct. It will only place new blocks.
@@ -956,12 +956,7 @@ public final class Settings {
      * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
      * {@link Setting#value};
      */
-    public final Setting<Consumer<ITextComponent>> logger = new Setting<>(Minecraft.getInstance().ingameGUI.getChatGUI()::printChatMessage);
-
-    /**
-     * Print out ALL command exceptions as a stack trace to stdout, even simple syntax errors
-     */
-    public final Setting<Boolean> verboseCommandExceptions = new Setting<>(false);
+    public final Setting<Consumer<Text>> logger = new Setting<>(MinecraftClient.getInstance().inGameHud.getChatHud()::addMessage);
 
     /**
      * The size of the box that is rendered when the current goal is a GoalYLevel

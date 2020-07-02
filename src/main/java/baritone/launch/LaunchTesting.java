@@ -24,7 +24,7 @@ import com.mojang.authlib.exceptions.AuthenticationException;
 import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.authlib.yggdrasil.YggdrasilUserAuthentication;
-import net.minecraft.launchwrapper.Launch;
+import net.fabricmc.loader.launch.knot.KnotClient;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -63,7 +63,7 @@ public class LaunchTesting {
             argsArray.add(v);
         });
 
-        Launch.main(argsArray.toArray(new String[0]));
+        KnotClient.main(argsArray.toArray(new String[0]));
     }
 
     private static void hackNatives() {

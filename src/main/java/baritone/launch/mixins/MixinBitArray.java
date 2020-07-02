@@ -18,47 +18,47 @@
 package baritone.launch.mixins;
 
 import baritone.utils.accessor.IBitArray;
-import net.minecraft.util.BitArray;
+import net.minecraft.util.PackedIntegerArray;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-@Mixin(BitArray.class)
+@Mixin(PackedIntegerArray.class)
 public abstract class MixinBitArray implements IBitArray {
 
     @Shadow
     @Final
-    private long[] longArray;
+    private long[] storage;
 
     @Shadow
     @Final
-    private int bitsPerEntry;
+    private int elementBits;
 
     @Shadow
     @Final
-    private long maxEntryValue;
+    private long maxValue;
 
     @Shadow
     @Final
-    private int arraySize;
+    private int size;
 
     @Override
     @Unique
     public int[] toArray() {
-        int[] out = new int[arraySize];
+        int[] out = new int[size];
 
-        for (int idx = 0, kl = bitsPerEntry - 1; idx < arraySize; idx++, kl += bitsPerEntry) {
-            final int i = idx * bitsPerEntry;
+        for (int idx = 0, kl = elementBits - 1; idx < size; idx++, kl += elementBits) {
+            final int i = idx * elementBits;
             final int j = i >> 6;
             final int l = i & 63;
             final int k = kl >> 6;
-            final long jl = longArray[j] >>> l;
+            final long jl = storage[j] >>> l;
 
             if (j == k) {
-                out[idx] = (int) (jl & maxEntryValue);
+                out[idx] = (int) (jl & maxValue);
             } else {
-                out[idx] = (int) ((jl | longArray[k] << (64 - l)) & maxEntryValue);
+                out[idx] = (int) ((jl | storage[k] << (64 - l)) & maxValue);
             }
         }
 

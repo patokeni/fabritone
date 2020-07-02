@@ -21,11 +21,10 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.ChunkEvent;
 import baritone.api.event.events.type.EventState;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.client.network.play.ClientPlayNetHandler;
-import net.minecraft.network.play.server.SChunkDataPacket;
-import net.minecraft.network.play.server.SCombatPacket;
-import net.minecraft.network.play.server.SUnloadChunkPacket;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
+import net.minecraft.network.packet.s2c.play.CombatEventS2CPacket;
+import net.minecraft.network.packet.s2c.play.UnloadChunkS2CPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -35,7 +34,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * @author Brady
  * @since 8/3/2018
  */
-@Mixin(ClientPlayNetHandler.class)
+@Mixin(ClientPlayNetworkHandler.class)
 public class MixinClientPlayNetHandler {
 
     // unused lol
@@ -48,8 +47,7 @@ public class MixinClientPlayNetHandler {
     )
     private void preRead(SPacketChunkData packetIn, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            ClientPlayerEntity player = ibaritone.getPlayerContext().player();
-            if (player != null && player.connection == (ClientPlayNetHandler) (Object) this) {
+            if (ibaritone.getPlayerContext().player().connection == (NetHandlerPlayClient) (Object) this) {
                 ibaritone.getGameEventHandler().onChunkEvent(
                         new ChunkEvent(
                                 EventState.PRE,
@@ -63,19 +61,18 @@ public class MixinClientPlayNetHandler {
     }*/
 
     @Inject(
-            method = "handleChunkData",
+            method = "onChunkData",
             at = @At("RETURN")
     )
-    private void postHandleChunkData(SChunkDataPacket packetIn, CallbackInfo ci) {
+    private void postHandleChunkData(ChunkDataS2CPacket packetIn, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            ClientPlayerEntity player = ibaritone.getPlayerContext().player();
-            if (player != null && player.connection == (ClientPlayNetHandler) (Object) this) {
+            if (ibaritone.getPlayerContext().player().networkHandler == (ClientPlayNetworkHandler) (Object) this) {
                 ibaritone.getGameEventHandler().onChunkEvent(
                         new ChunkEvent(
                                 EventState.POST,
                                 packetIn.isFullChunk() ? ChunkEvent.Type.POPULATE_FULL : ChunkEvent.Type.POPULATE_PARTIAL,
-                                packetIn.getChunkX(),
-                                packetIn.getChunkZ()
+                                packetIn.getX(),
+                                packetIn.getZ()
                         )
                 );
             }
@@ -83,13 +80,12 @@ public class MixinClientPlayNetHandler {
     }
 
     @Inject(
-            method = "processChunkUnload",
+            method = "onUnloadChunk",
             at = @At("HEAD")
     )
-    private void preChunkUnload(SUnloadChunkPacket packet, CallbackInfo ci) {
+    private void preChunkUnload(UnloadChunkS2CPacket packet, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            ClientPlayerEntity player = ibaritone.getPlayerContext().player();
-            if (player != null && player.connection == (ClientPlayNetHandler) (Object) this) {
+            if (ibaritone.getPlayerContext().player().networkHandler == (ClientPlayNetworkHandler) (Object) this) {
                 ibaritone.getGameEventHandler().onChunkEvent(
                         new ChunkEvent(EventState.PRE, ChunkEvent.Type.UNLOAD, packet.getX(), packet.getZ())
                 );
@@ -98,13 +94,12 @@ public class MixinClientPlayNetHandler {
     }
 
     @Inject(
-            method = "processChunkUnload",
+            method = "onUnloadChunk",
             at = @At("RETURN")
     )
-    private void postChunkUnload(SUnloadChunkPacket packet, CallbackInfo ci) {
+    private void postChunkUnload(UnloadChunkS2CPacket packet, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            ClientPlayerEntity player = ibaritone.getPlayerContext().player();
-            if (player != null && player.connection == (ClientPlayNetHandler) (Object) this) {
+            if (ibaritone.getPlayerContext().player().networkHandler == (ClientPlayNetworkHandler) (Object) this) {
                 ibaritone.getGameEventHandler().onChunkEvent(
                         new ChunkEvent(EventState.POST, ChunkEvent.Type.UNLOAD, packet.getX(), packet.getZ())
                 );
@@ -113,16 +108,15 @@ public class MixinClientPlayNetHandler {
     }
 
     @Inject(
-            method = "handleCombatEvent",
+            method = "onCombatEvent",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/Minecraft.displayGuiScreen(Lnet/minecraft/client/gui/screen/Screen;)V"
+                    target = "Lnet/minecraft/client/MinecraftClient;openScreen(Lnet/minecraft/client/gui/screen/Screen;)V"
             )
     )
-    private void onPlayerDeath(SCombatPacket packetIn, CallbackInfo ci) {
+    private void onPlayerDeath(CombatEventS2CPacket packetIn, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            ClientPlayerEntity player = ibaritone.getPlayerContext().player();
-            if (player != null && player.connection == (ClientPlayNetHandler) (Object) this) {
+            if (ibaritone.getPlayerContext().player().networkHandler == (ClientPlayNetworkHandler) (Object) this) {
                 ibaritone.getGameEventHandler().onPlayerDeath();
             }
         }

@@ -19,20 +19,28 @@ package baritone.launch.mixins;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
+import baritone.api.event.events.BlockInteractEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
-import org.objectweb.asm.Opcodes;
+import net.minecraft.entity.Entity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.hit.HitResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.function.BiFunction;
 
@@ -40,13 +48,15 @@ import java.util.function.BiFunction;
  * @author Brady
  * @since 7/31/2018
  */
-@Mixin(Minecraft.class)
+@Mixin(MinecraftClient.class)
 public class MixinMinecraft {
 
     @Shadow
     public ClientPlayerEntity player;
     @Shadow
     public ClientWorld world;
+    @Shadow
+    public HitResult crosshairTarget;
 
     @Inject(
             method = "<init>",
@@ -57,11 +67,11 @@ public class MixinMinecraft {
     }
 
     @Inject(
-            method = "runTick",
+            method = "tick",
             at = @At(
                     value = "FIELD",
-                    opcode = Opcodes.GETFIELD,
-                    target = "net/minecraft/client/Minecraft.currentScreen:Lnet/minecraft/client/gui/screen/Screen;",
+                    opcode = 180,
+                    target = "net/minecraft/client/MinecraftClient.currentScreen:Lnet/minecraft/client/gui/screen/Screen;",
                     ordinal = 5,
                     shift = At.Shift.BY,
                     by = -3
@@ -82,7 +92,7 @@ public class MixinMinecraft {
     }
 
     @Inject(
-            method = "loadWorld(Lnet/minecraft/client/world/ClientWorld;)V",
+            method = "joinWorld(Lnet/minecraft/client/world/ClientWorld;)V",
             at = @At("HEAD")
     )
     private void preLoadWorld(ClientWorld world, CallbackInfo ci) {
@@ -102,7 +112,7 @@ public class MixinMinecraft {
     }
 
     @Inject(
-            method = "loadWorld(Lnet/minecraft/client/world/ClientWorld;)V",
+            method = "joinWorld(Lnet/minecraft/client/world/ClientWorld;)V",
             at = @At("RETURN")
     )
     private void postLoadWorld(ClientWorld world, CallbackInfo ci) {
@@ -118,36 +128,30 @@ public class MixinMinecraft {
     }
 
     @Redirect(
-            method = "runTick",
+            method = "tick",
             at = @At(
                     value = "FIELD",
-                    opcode = Opcodes.GETFIELD,
+                    opcode = 180,
                     target = "net/minecraft/client/gui/screen/Screen.passEvents:Z"
             )
     )
     private boolean passEvents(Screen screen) {
         // allow user input is only the primary baritone
-        return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().isPathing() && player != null) || screen.passEvents;
+        return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().getCurrent() != null && player != null) || screen.passEvents;
     }
 
-    // TODO
-    // FIXME
-    // bradyfix
-    // i cant mixin
-    // lol
-    // https://discordapp.com/channels/208753003996512258/503692253881958400/674760939681349652
-    // https://discordapp.com/channels/208753003996512258/503692253881958400/674756457966862376
-    /*@Inject(
-            method = "rightClickMouse",
+    @Inject(
+            method = "doItemUse",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/entity/player/ClientPlayerEntity.swingArm(Lnet/minecraft/util/Hand;)V",
-                    ordinal = 1
+                    target = "net/minecraft/client/network/ClientPlayerEntity.swingHand(Lnet/minecraft/util/Hand;)V"
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )
-    private void onBlockUse(CallbackInfo ci, Hand var1[], int var2, int var3, Hand enumhand, ItemStack itemstack, EntityRayTraceResult rt, Entity ent, ActionResultType art, BlockRayTraceResult raytrace, int i, ActionResultType enumactionresult) {
+    private void onBlockUse(CallbackInfo ci, Hand var1[], int var2, int var3, Hand enumhand, ItemStack itemstack) {
         // rightClickMouse is only for the main player
-        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onBlockInteract(new BlockInteractEvent(raytrace.getPos(), BlockInteractEvent.Type.USE));
-    }*/
+        if (crosshairTarget.getType() == HitResult.Type.BLOCK) {
+            BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onBlockInteract(new BlockInteractEvent(((BlockHitResult) crosshairTarget).getBlockPos(), BlockInteractEvent.Type.USE));
+        }
+    }
 }

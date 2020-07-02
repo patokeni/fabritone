@@ -26,19 +26,19 @@ import baritone.api.utils.Helper;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.Matrix4f;
-import net.minecraft.client.renderer.tileentity.BeaconTileEntityRenderer;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.render.block.entity.BeaconBlockEntityRenderer;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
 
 import java.awt.*;
 import java.util.Collection;
@@ -53,41 +53,29 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public final class PathRenderer implements IRenderer, Helper {
 
-    private static final ResourceLocation TEXTURE_BEACON_BEAM = new ResourceLocation("textures/entity/beacon_beam.png");
+    private static final Identifier TEXTURE_BEACON_BEAM = new Identifier("textures/entity/beacon_beam.png");
 
 
     private PathRenderer() {}
-
-    public static double posX() {
-        return renderManager.renderPosX();
-    }
-
-    public static double posY() {
-        return renderManager.renderPosY();
-    }
-
-    public static double posZ() {
-        return renderManager.renderPosZ();
-    }
 
     public static void render(RenderEvent event, PathingBehavior behavior) {
         float partialTicks = event.getPartialTicks();
         Goal goal = behavior.getGoal();
         if (Helper.mc.currentScreen instanceof GuiClick) {
-            ((GuiClick) Helper.mc.currentScreen).onRender(event.getModelViewStack(), event.getProjectionMatrix());
+            ((GuiClick) Helper.mc.currentScreen).onRender();
         }
 
-        int thisPlayerDimension = behavior.baritone.getPlayerContext().world().getDimension().getType().getId();
-        int currentRenderViewDimension = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().getDimension().getType().getId();
+        int thisPlayerDimension = behavior.baritone.getPlayerContext().world().getDimension().getType().getRawId();
+        int currentRenderViewDimension = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().getDimension().getType().getRawId();
 
         if (thisPlayerDimension != currentRenderViewDimension) {
             // this is a path for a bot in a different dimension, don't render it
             return;
         }
 
-        Entity renderView = Helper.mc.getRenderViewEntity();
+        Entity renderView = Helper.mc.getCameraEntity();
 
-        if (renderView.world != BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world()) {
+        if (renderView == null || renderView.world == null || renderView.world != BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world()) {
             System.out.println("I have no idea what's going on");
             System.out.println("The primary baritone is in a different world than the render view entity");
             System.out.println("Not rendering the path");
@@ -95,7 +83,7 @@ public final class PathRenderer implements IRenderer, Helper {
         }
 
         if (goal != null && settings.renderGoal.value) {
-            drawDankLitGoalBox(event.getModelViewStack(), renderView, goal, partialTicks, settings.colorGoalBox.value);
+            drawDankLitGoalBox(renderView, goal, partialTicks, settings.colorGoalBox.value);
         }
 
         if (!settings.renderPath.value) {
@@ -105,9 +93,9 @@ public final class PathRenderer implements IRenderer, Helper {
         PathExecutor current = behavior.getCurrent(); // this should prevent most race conditions?
         PathExecutor next = behavior.getNext(); // like, now it's not possible for current!=null to be true, then suddenly false because of another thread
         if (current != null && settings.renderSelectionBoxes.value) {
-            drawManySelectionBoxes(event.getModelViewStack(), renderView, current.toBreak(), settings.colorBlocksToBreak.value);
-            drawManySelectionBoxes(event.getModelViewStack(), renderView, current.toPlace(), settings.colorBlocksToPlace.value);
-            drawManySelectionBoxes(event.getModelViewStack(), renderView, current.toWalkInto(), settings.colorBlocksToWalkInto.value);
+            drawManySelectionBoxes(renderView, current.toBreak(), settings.colorBlocksToBreak.value);
+            drawManySelectionBoxes(renderView, current.toPlace(), settings.colorBlocksToPlace.value);
+            drawManySelectionBoxes(renderView, current.toWalkInto(), settings.colorBlocksToWalkInto.value);
         }
 
         //drawManySelectionBoxes(player, Collections.singletonList(behavior.pathStart()), partialTicks, Color.WHITE);
@@ -115,27 +103,27 @@ public final class PathRenderer implements IRenderer, Helper {
         // Render the current path, if there is one
         if (current != null && current.getPath() != null) {
             int renderBegin = Math.max(current.getPosition() - 3, 0);
-            drawPath(event.getModelViewStack(), current.getPath(), renderBegin, settings.colorCurrentPath.value, settings.fadePath.value, 10, 20);
+            drawPath(current.getPath(), renderBegin, settings.colorCurrentPath.value, settings.fadePath.value, 10, 20);
         }
 
         if (next != null && next.getPath() != null) {
-            drawPath(event.getModelViewStack(), next.getPath(), 0, settings.colorNextPath.value, settings.fadePath.value, 10, 20);
+            drawPath(next.getPath(), 0, settings.colorNextPath.value, settings.fadePath.value, 10, 20);
         }
 
         // If there is a path calculation currently running, render the path calculation process
         behavior.getInProgress().ifPresent(currentlyRunning -> {
             currentlyRunning.bestPathSoFar().ifPresent(p -> {
-                drawPath(event.getModelViewStack(), p, 0, settings.colorBestPathSoFar.value, settings.fadePath.value, 10, 20);
+                drawPath(p, 0, settings.colorBestPathSoFar.value, settings.fadePath.value, 10, 20);
             });
 
             currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
-                drawPath(event.getModelViewStack(), mr, 0, settings.colorMostRecentConsidered.value, settings.fadePath.value, 10, 20);
-                drawManySelectionBoxes(event.getModelViewStack(), renderView, Collections.singletonList(mr.getDest()), settings.colorMostRecentConsidered.value);
+                drawPath(mr, 0, settings.colorMostRecentConsidered.value, settings.fadePath.value, 10, 20);
+                drawManySelectionBoxes(renderView, Collections.singletonList(mr.getDest()), settings.colorMostRecentConsidered.value);
             });
         });
     }
 
-    public static void drawPath(MatrixStack stack, IPath path, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
+    public static void drawPath(IPath path, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
         IRenderer.startLines(color, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
 
         int fadeStart = fadeStart0 + startIndex;
@@ -171,7 +159,7 @@ public final class PathRenderer implements IRenderer, Helper {
                 IRenderer.glColor(color, alpha);
             }
 
-            drawLine(stack, start.x, start.y, start.z, end.x, end.y, end.z);
+            drawLine(IRenderer.toVec3d(start.x, start.y, start.z), IRenderer.toVec3d(end.x, end.y, end.z));
 
             tessellator.draw();
         }
@@ -179,27 +167,25 @@ public final class PathRenderer implements IRenderer, Helper {
         IRenderer.endLines(settings.renderPathIgnoreDepth.value);
     }
 
+    public static void drawLine(double x1, double y1, double z1, double x2, double y2, double z2) {
+        drawLine(IRenderer.toVec3d(x1, y1, z1), IRenderer.toVec3d(x2, y2, z2));
+    }
 
-    public static void drawLine(MatrixStack stack, double x1, double y1, double z1, double x2, double y2, double z2) {
-        Matrix4f matrix4f = stack.getLast().getMatrix();
-
-        double vpX = posX();
-        double vpY = posY();
-        double vpZ = posZ();
+    public static void drawLine(Vec3d start, Vec3d end) {
         boolean renderPathAsFrickinThingy = !settings.renderPathAsLine.value;
 
-        buffer.begin(renderPathAsFrickinThingy ? GL_LINE_STRIP : GL_LINES, DefaultVertexFormats.POSITION);
-        buffer.pos(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.5D - vpY), (float) (z1 + 0.5D - vpZ)).endVertex();
-        buffer.pos(matrix4f, (float) (x2 + 0.5D - vpX), (float) (y2 + 0.5D - vpY), (float) (z2 + 0.5D - vpZ)).endVertex();
+        buffer.begin(renderPathAsFrickinThingy ? GL_LINE_STRIP : GL_LINES, VertexFormats.POSITION);
+        IRenderer.putVertex(buffer, IRenderer.camPos(), IRenderer.toVec3d(start.x + 0.5D, start.y + 0.5D, start.z + 0.5D));
+        IRenderer.putVertex(buffer, IRenderer.camPos(), IRenderer.toVec3d(end.x + 0.5D, end.y + 0.5D, end.z + 0.5D));
 
         if (renderPathAsFrickinThingy) {
-            buffer.pos(matrix4f, (float) (x2 + 0.5D - vpX), (float) (y2 + 0.53D - vpY), (float) (z2 + 0.5D - vpZ)).endVertex();
-            buffer.pos(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.53D - vpY), (float) (z1 + 0.5D - vpZ)).endVertex();
-            buffer.pos(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.5D - vpY), (float) (z1 + 0.5D - vpZ)).endVertex();
+            IRenderer.putVertex(buffer, IRenderer.camPos(), IRenderer.toVec3d(end.x + 0.5D, end.y + 0.53D, end.z + 0.5D));
+            IRenderer.putVertex(buffer, IRenderer.camPos(), IRenderer.toVec3d(start.x + 0.5D, start.y + 0.53D, start.z + 0.5D));
+            IRenderer.putVertex(buffer, IRenderer.camPos(), IRenderer.toVec3d(start.x + 0.5D, start.y + 0.5D, start.z + 0.5D));
         }
     }
 
-    public static void drawManySelectionBoxes(MatrixStack stack, Entity player, Collection<BlockPos> positions, Color color) {
+    public static void drawManySelectionBoxes(Entity player, Collection<BlockPos> positions, Color color) {
         IRenderer.startLines(color, settings.pathRenderLineWidthPixels.value, settings.renderSelectionBoxesIgnoreDepth.value);
 
         //BlockPos blockpos = movingObjectPositionIn.getBlockPos();
@@ -207,19 +193,16 @@ public final class PathRenderer implements IRenderer, Helper {
 
         positions.forEach(pos -> {
             BlockState state = bsi.get0(pos);
-            VoxelShape shape = state.getShape(player.world, pos);
-            AxisAlignedBB toDraw = shape.isEmpty() ? VoxelShapes.fullCube().getBoundingBox() : shape.getBoundingBox();
+            VoxelShape shape = state.getOutlineShape(player.world, pos);
+            Box toDraw = shape.isEmpty() ? VoxelShapes.fullCube().getBoundingBox() : shape.getBoundingBox();
             toDraw = toDraw.offset(pos);
-            IRenderer.drawAABB(stack, toDraw, .002D);
+            IRenderer.drawAABB(toDraw, .002D);
         });
 
         IRenderer.endLines(settings.renderSelectionBoxesIgnoreDepth.value);
     }
 
-    public static void drawDankLitGoalBox(MatrixStack stack, Entity player, Goal goal, float partialTicks, Color color) {
-        double renderPosX = posX();
-        double renderPosY = posY();
-        double renderPosZ = posZ();
+    public static void drawDankLitGoalBox(Entity player, Goal goal, float partialTicks, Color color) {
         double minX, maxX;
         double minZ, maxZ;
         double minY, maxY;
@@ -227,16 +210,16 @@ public final class PathRenderer implements IRenderer, Helper {
         double y = MathHelper.cos((float) (((float) ((System.nanoTime() / 100000L) % 20000L)) / 20000F * Math.PI * 2));
         if (goal instanceof IGoalRenderPos) {
             BlockPos goalPos = ((IGoalRenderPos) goal).getGoalPos();
-            minX = goalPos.getX() + 0.002 - renderPosX;
-            maxX = goalPos.getX() + 1 - 0.002 - renderPosX;
-            minZ = goalPos.getZ() + 0.002 - renderPosZ;
-            maxZ = goalPos.getZ() + 1 - 0.002 - renderPosZ;
+            minX = goalPos.getX() + 0.002;
+            maxX = goalPos.getX() + 1 - 0.002;
+            minZ = goalPos.getZ() + 0.002;
+            maxZ = goalPos.getZ() + 1 - 0.002;
             if (goal instanceof GoalGetToBlock || goal instanceof GoalTwoBlocks) {
                 y /= 2;
             }
-            y1 = 1 + y + goalPos.getY() - renderPosY;
-            y2 = 1 - y + goalPos.getY() - renderPosY;
-            minY = goalPos.getY() - renderPosY;
+            y1 = 1 + y + goalPos.getY();
+            y2 = 1 - y + goalPos.getY();
+            minY = goalPos.getY();
             maxY = minY + 2;
             if (goal instanceof GoalGetToBlock || goal instanceof GoalTwoBlocks) {
                 y1 -= 0.5;
@@ -251,97 +234,90 @@ public final class PathRenderer implements IRenderer, Helper {
 
                 Helper.mc.getTextureManager().bindTexture(TEXTURE_BEACON_BEAM);
                 if (settings.renderGoalIgnoreDepth.value) {
-                    RenderSystem.disableDepthTest();
+                    GlStateManager.disableDepthTest();
                 }
 
-                stack.push(); // push
-                stack.translate(goalPos.getX() - renderPosX, -renderPosY, goalPos.getZ() - renderPosZ); // translate
-
-                BeaconTileEntityRenderer.renderBeamSegment(
-                        stack,
-                        mc.getRenderTypeBuffers().getBufferSource(),
-                        TEXTURE_BEACON_BEAM,
+                BeaconBlockEntityRenderer.renderLightBeam(new MatrixStack(),
+                        Helper.mc.getBufferBuilders().getEntityVertexConsumers(),
+                        BeaconBlockEntityRenderer.BEAM_TEX,
                         partialTicks,
-                        1.0F,
-                        player.world.getGameTime(),
+                        1.0f,
+                        player.world.getTime(),
                         0,
                         256,
                         color.getColorComponents(null),
 
                         // Arguments filled by the private method lol
-                        0.2F,
-                        0.25F
+                        0.2f,
+                        0.25f
                 );
 
-                stack.pop(); // pop
-
                 if (settings.renderGoalIgnoreDepth.value) {
-                    RenderSystem.enableDepthTest();
+                    GlStateManager.enableDepthTest();
                 }
 
                 glPopAttrib();
                 return;
             }
 
-            minX = goalPos.getX() + 0.002 - renderPosX;
-            maxX = goalPos.getX() + 1 - 0.002 - renderPosX;
-            minZ = goalPos.getZ() + 0.002 - renderPosZ;
-            maxZ = goalPos.getZ() + 1 - 0.002 - renderPosZ;
+            minX = goalPos.getX() + 0.002;
+            maxX = goalPos.getX() + 1 - 0.002;
+            minZ = goalPos.getZ() + 0.002;
+            maxZ = goalPos.getZ() + 1 - 0.002;
 
             y1 = 0;
             y2 = 0;
-            minY = 0 - renderPosY;
-            maxY = 256 - renderPosY;
+            minY = 0;
+            maxY = 256;
         } else if (goal instanceof GoalComposite) {
             for (Goal g : ((GoalComposite) goal).goals()) {
-                drawDankLitGoalBox(stack, player, g, partialTicks, color);
+                drawDankLitGoalBox(player, g, partialTicks, color);
             }
             return;
         } else if (goal instanceof GoalInverted) {
-            drawDankLitGoalBox(stack, player, ((GoalInverted) goal).origin, partialTicks, settings.colorInvertedGoalBox.value);
+            drawDankLitGoalBox(player, ((GoalInverted) goal).origin, partialTicks, settings.colorInvertedGoalBox.value);
             return;
         } else if (goal instanceof GoalYLevel) {
             GoalYLevel goalpos = (GoalYLevel) goal;
-            minX = player.getPositionVec().x - settings.yLevelBoxSize.value - renderPosX;
-            minZ = player.getPositionVec().z - settings.yLevelBoxSize.value - renderPosZ;
-            maxX = player.getPositionVec().x + settings.yLevelBoxSize.value - renderPosX;
-            maxZ = player.getPositionVec().z + settings.yLevelBoxSize.value - renderPosZ;
-            minY = ((GoalYLevel) goal).level - renderPosY;
+            minX = player.getX() - settings.yLevelBoxSize.value;
+            minZ = player.getZ() - settings.yLevelBoxSize.value;
+            maxX = player.getX() + settings.yLevelBoxSize.value;
+            maxZ = player.getZ() + settings.yLevelBoxSize.value;
+            minY = ((GoalYLevel) goal).level;
             maxY = minY + 2;
-            y1 = 1 + y + goalpos.level - renderPosY;
-            y2 = 1 - y + goalpos.level - renderPosY;
+            y1 = 1 + y + goalpos.level;
+            y2 = 1 - y + goalpos.level;
         } else {
             return;
         }
 
         IRenderer.startLines(color, settings.goalRenderLineWidthPixels.value, settings.renderGoalIgnoreDepth.value);
 
-        renderHorizontalQuad(stack, minX, maxX, minZ, maxZ, y1);
-        renderHorizontalQuad(stack, minX, maxX, minZ, maxZ, y2);
+        renderHorizontalQuad(minX, maxX, minZ, maxZ, y1);
+        renderHorizontalQuad(minX, maxX, minZ, maxZ, y2);
 
-        Matrix4f matrix4f = stack.getLast().getMatrix();
-        buffer.begin(GL_LINES, DefaultVertexFormats.POSITION);
-        buffer.pos(matrix4f, (float) minX, (float) minY, (float) minZ).endVertex();
-        buffer.pos(matrix4f, (float) minX, (float) maxY, (float) minZ).endVertex();
-        buffer.pos(matrix4f, (float) maxX, (float) minY, (float) minZ).endVertex();
-        buffer.pos(matrix4f, (float) maxX, (float) maxY, (float) minZ).endVertex();
-        buffer.pos(matrix4f, (float) maxX, (float) minY, (float) maxZ).endVertex();
-        buffer.pos(matrix4f, (float) maxX, (float) maxY, (float) maxZ).endVertex();
-        buffer.pos(matrix4f, (float) minX, (float) minY, (float) maxZ).endVertex();
-        buffer.pos(matrix4f, (float) minX, (float) maxY, (float) maxZ).endVertex();
+
+        buffer.begin(GL_LINES, VertexFormats.POSITION);
+        IRenderer.putVertex(buffer, IRenderer.camPos(), IRenderer.toVec3d(minX, minY, minZ));
+        IRenderer.putVertex(buffer, IRenderer.camPos(), IRenderer.toVec3d(minX, maxY, minZ));
+        IRenderer.putVertex(buffer, IRenderer.camPos(), IRenderer.toVec3d(maxX, minY, minZ));
+        IRenderer.putVertex(buffer, IRenderer.camPos(), IRenderer.toVec3d(maxX, maxY, minZ));
+        IRenderer.putVertex(buffer, IRenderer.camPos(), IRenderer.toVec3d(maxX, minY, maxZ));
+        IRenderer.putVertex(buffer, IRenderer.camPos(), IRenderer.toVec3d(maxX, maxY, maxZ));
+        IRenderer.putVertex(buffer, IRenderer.camPos(), IRenderer.toVec3d(minX, minY, maxZ));
+        IRenderer.putVertex(buffer, IRenderer.camPos(), IRenderer.toVec3d(minX, maxY, maxZ));
         tessellator.draw();
 
         IRenderer.endLines(settings.renderGoalIgnoreDepth.value);
     }
 
-    private static void renderHorizontalQuad(MatrixStack stack, double minX, double maxX, double minZ, double maxZ, double y) {
+    private static void renderHorizontalQuad(double minX, double maxX, double minZ, double maxZ, double y) {
         if (y != 0) {
-            Matrix4f matrix4f = stack.getLast().getMatrix();
-            buffer.begin(GL_LINE_LOOP, DefaultVertexFormats.POSITION);
-            buffer.pos(matrix4f, (float) minX, (float) y, (float) minZ).endVertex();
-            buffer.pos(matrix4f, (float) maxX, (float) y, (float) minZ).endVertex();
-            buffer.pos(matrix4f, (float) maxX, (float) y, (float) maxZ).endVertex();
-            buffer.pos(matrix4f, (float) minX, (float) y, (float) maxZ).endVertex();
+            buffer.begin(GL_LINE_LOOP, VertexFormats.POSITION);
+            IRenderer.putVertex(buffer, IRenderer.camPos(), IRenderer.toVec3d(minX,y,minZ));
+            IRenderer.putVertex(buffer, IRenderer.camPos(), IRenderer.toVec3d(maxX,y,minZ));
+            IRenderer.putVertex(buffer, IRenderer.camPos(), IRenderer.toVec3d(maxX,y,maxZ));
+            IRenderer.putVertex(buffer, IRenderer.camPos(), IRenderer.toVec3d(minX,y,maxZ));
             tessellator.draw();
         }
     }

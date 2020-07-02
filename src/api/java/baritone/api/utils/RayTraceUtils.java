@@ -18,9 +18,9 @@
 package baritone.api.utils;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.RayTraceContext;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RayTraceContext;
 
 /**
  * @author Brady
@@ -40,16 +40,16 @@ public final class RayTraceUtils {
      * @param blockReachDistance The block reach distance of the entity
      * @return The calculated raytrace result
      */
-    public static RayTraceResult rayTraceTowards(Entity entity, Rotation rotation, double blockReachDistance) {
+    public static HitResult rayTraceTowards(Entity entity, Rotation rotation, double blockReachDistance) {
         return rayTraceTowards(entity, rotation, blockReachDistance, false);
     }
 
-    public static RayTraceResult rayTraceTowards(Entity entity, Rotation rotation, double blockReachDistance, boolean wouldSneak) {
+    public static HitResult rayTraceTowards(Entity entity, Rotation rotation, double blockReachDistance, boolean wouldSneak) {
         Vec3d start;
         if (wouldSneak) {
             start = inferSneakingEyePosition(entity);
         } else {
-            start = entity.getEyePosition(1.0F); // do whatever is correct
+            start = entity.getCameraPosVec(1.0F); // do whatever is correct
         }
         Vec3d direction = RotationUtils.calcVec3dFromRotation(rotation);
         Vec3d end = start.add(
@@ -57,10 +57,10 @@ public final class RayTraceUtils {
                 direction.y * blockReachDistance,
                 direction.z * blockReachDistance
         );
-        return entity.world.rayTraceBlocks(new RayTraceContext(start, end, RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.NONE, entity));
+        return entity.world.rayTrace(new RayTraceContext(start, end, RayTraceContext.ShapeType.OUTLINE, RayTraceContext.FluidHandling.NONE, entity));
     }
 
     public static Vec3d inferSneakingEyePosition(Entity entity) {
-        return new Vec3d(entity.getPosX(), entity.getPosY() + IPlayerContext.eyeHeight(true), entity.getPosZ());
+        return new Vec3d(entity.getX(), entity.getY() + IPlayerContext.eyeHeight(true), entity.getZ());
     }
 }

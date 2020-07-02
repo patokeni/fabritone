@@ -21,9 +21,10 @@ import net.minecraft.util.math.BlockPos;
 
 public interface IPlayerControllerMP {
 
-    void setIsHittingBlock(boolean isHittingBlock);
+    void setBreakingBlock(boolean breakingBlock);
 
-    BlockPos getCurrentBlock();
+    BlockPos getCurrentBreakingPos();
 
-    void callSyncCurrentPlayItem();
+    void callSyncSelectedSlot();
+
 }

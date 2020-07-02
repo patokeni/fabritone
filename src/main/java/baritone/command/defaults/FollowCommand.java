@@ -29,7 +29,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
 import java.util.*;
@@ -81,9 +81,9 @@ public class FollowCommand extends Command {
                         .forEach(this::logDirect);
             } else {
                 classes.stream()
-                        .map(Registry.ENTITY_TYPE::getKey)
+                        .map(Registry.ENTITY_TYPE::getId)
                         .map(Objects::requireNonNull)
-                        .map(ResourceLocation::toString)
+                        .map(Identifier::toString)
                         .forEach(this::logDirect);
             }
         }

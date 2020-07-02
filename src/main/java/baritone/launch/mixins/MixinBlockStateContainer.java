@@ -18,30 +18,30 @@
 package baritone.launch.mixins;
 
 import baritone.utils.accessor.IBitArray;
-import baritone.utils.accessor.IPalettedContainer;
+import baritone.utils.accessor.IBlockStateContainer;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.BitArray;
-import net.minecraft.util.palette.IPalette;
-import net.minecraft.util.palette.PalettedContainer;
+import net.minecraft.util.PackedIntegerArray;
+import net.minecraft.world.chunk.Palette;
+import net.minecraft.world.chunk.PalettedContainer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(PalettedContainer.class)
-public abstract class MixinPalettedContainer implements IPalettedContainer {
+public abstract class MixinBlockStateContainer implements IBlockStateContainer {
 
     @Shadow
-    protected BitArray storage;
+    protected PackedIntegerArray data;
 
     @Shadow
-    protected IPalette<BlockState> palette;
+    protected Palette<BlockState> palette;
 
     @Override
     public BlockState getAtPalette(int index) {
-        return palette.get(index);
+        return palette.getByIndex(index);
     }
 
     @Override
     public int[] storageArray() {
-        return ((IBitArray) storage).toArray();
+        return ((IBitArray) data).toArray();
     }
 }

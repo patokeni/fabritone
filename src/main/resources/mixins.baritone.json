@@ -9,21 +9,19 @@
   },
   "client": [
     "MixinBitArray",
+    "MixinBlockStateContainer",
     "MixinChunkArray",
     "MixinClientChunkProvider",
     "MixinClientPlayerEntity",
     "MixinClientPlayNetHandler",
-    "MixinCommandSuggestionHelper",
     "MixinEntity",
-    "MixinEntityRenderManager",
+    "MixinGameRenderer",
     "MixinItemStack",
     "MixinLivingEntity",
     "MixinLootContext",
     "MixinMinecraft",
     "MixinNetworkManager",
-    "MixinPalettedContainer",
     "MixinPlayerController",
-    "MixinScreen",
-    "MixinWorldRenderer"
+    "MixinScreen"
   ]
 }

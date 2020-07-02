@@ -2,8 +2,8 @@ package baritone.selection;
 
 import baritone.api.selection.ISelection;
 import baritone.api.utils.BetterBlockPos;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 
 public class Selection implements ISelection {
@@ -13,7 +13,7 @@ public class Selection implements ISelection {
     private final BetterBlockPos min;
     private final BetterBlockPos max;
     private final Vec3i size;
-    private final AxisAlignedBB aabb;
+    private final Box aabb;
 
     public Selection(BetterBlockPos pos1, BetterBlockPos pos2) {
         this.pos1 = pos1;
@@ -37,7 +37,7 @@ public class Selection implements ISelection {
                 max.z - min.z + 1
         );
 
-        this.aabb = new AxisAlignedBB(this.min, this.max.add(1, 1, 1));
+        this.aabb = new Box(this.min, this.max.add(1, 1, 1));
     }
 
     @Override
@@ -66,7 +66,7 @@ public class Selection implements ISelection {
     }
 
     @Override
-    public AxisAlignedBB aabb() {
+    public Box aabb() {
         return aabb;
     }
 
@@ -91,7 +91,7 @@ public class Selection implements ISelection {
      * else if they're both at the same position on that axis (it really doesn't matter)
      */
     private boolean isPos2(Direction facing) {
-        boolean negative = facing.getAxisDirection().getOffset() < 0;
+        boolean negative = facing.getDirection().offset() < 0;
 
         switch (facing.getAxis()) {
             case X:

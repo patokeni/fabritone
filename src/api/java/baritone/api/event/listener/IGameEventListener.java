@@ -18,12 +18,11 @@
 package baritone.api.event.listener;
 
 import baritone.api.event.events.*;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.DeathScreen;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
-import net.minecraft.network.IPacket;
+import net.minecraft.network.Packet;
 import net.minecraft.util.math.Vec3d;
 
 /**
@@ -36,7 +35,7 @@ public interface IGameEventListener {
      * Run once per game tick before screen input is handled.
      *
      * @param event The event
-     * @see Minecraft#runTick()
+     * @see MinecraftClient#tick()
      */
     void onTick(TickEvent event);
 
@@ -81,7 +80,7 @@ public interface IGameEventListener {
      * Runs before and after whenever a new world is loaded
      *
      * @param event The event
-     * @see Minecraft#loadWorld(ClientWorld)
+     * @see MinecraftClient#joinWorld(ClientWorld)
      */
     void onWorldEvent(WorldEvent event);
 
@@ -106,15 +105,15 @@ public interface IGameEventListener {
      * and before and after the player jumps.
      *
      * @param event The event
-     * @see Entity#moveRelative(float, Vec3d)
+     * @see Entity#move(MovementType, Vec3d)
      */
     void onPlayerRotationMove(RotationMoveEvent event);
 
     /**
-     * Called whenever the sprint keybind state is checked in {@link ClientPlayerEntity#livingTick}
+     * Called whenever the sprint keybind state is checked in {@link ClientPlayerEntity#tickMovement()}
      *
      * @param event The event
-     * @see ClientPlayerEntity#livingTick()
+     * @see ClientPlayerEntity#tickMovement()
      */
     void onPlayerSprintState(SprintStateEvent event);
 
