@@ -150,7 +150,7 @@ public final class BlockOptionalMeta {
 
     public static LootManager getManager() {
         if (manager == null) {
-            ResourcePackManager<?> rpl = new ResourcePackManager<>(ResourcePackProfile::new, new VanillaDataPackProvider(), new FileResourcePackProvider(Helper.mc.getResourcePackDir(), ResourcePackSource.PACK_SOURCE_WORLD));
+            ResourcePackManager rpl = new ResourcePackManager(ResourcePackProfile::new, new VanillaDataPackProvider(), new FileResourcePackProvider(Helper.mc.getResourcePackDir(), ResourcePackSource.PACK_SOURCE_WORLD));
             rpl.scanPacks();
             List<ResourcePack> thePacks = new ArrayList<>();
 
