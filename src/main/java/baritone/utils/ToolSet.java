@@ -18,6 +18,7 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -120,7 +121,7 @@ public class ToolSet {
                 }
             }
         }
-        return best;
+        return BaritoneAPI.getSettings().autoTool.value ? best : player.inventory.selectedSlot;
     }
 
     /**

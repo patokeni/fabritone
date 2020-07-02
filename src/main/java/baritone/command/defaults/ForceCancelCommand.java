@@ -17,6 +17,7 @@
 
 package baritone.command.defaults;
 
+import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.behavior.IPathingBehavior;
 import baritone.api.command.Command;
@@ -39,7 +40,7 @@ public class ForceCancelCommand extends Command {
         IPathingBehavior pathingBehavior = baritone.getPathingBehavior();
         pathingBehavior.cancelEverything();
         pathingBehavior.forceCancel();
-        logDirect("ok force canceled");
+        logDirect("ok force canceled", BaritoneAPI.getSettings().allowToast.value);
     }
 
     @Override

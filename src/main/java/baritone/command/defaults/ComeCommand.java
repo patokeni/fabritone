@@ -17,6 +17,7 @@
 
 package baritone.command.defaults;
 
+import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.command.Command;
@@ -44,7 +45,7 @@ public class ComeCommand extends Command {
             throw new CommandInvalidStateException("render view entity is null");
         }
         baritone.getCustomGoalProcess().setGoalAndPath(new GoalBlock(new BlockPos(entity)));
-        logDirect("Coming");
+        logDirect("Coming", BaritoneAPI.getSettings().allowToast.value);
     }
 
     @Override

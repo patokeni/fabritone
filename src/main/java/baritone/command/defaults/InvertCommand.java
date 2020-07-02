@@ -17,6 +17,7 @@
 
 package baritone.command.defaults;
 
+import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalInverted;
@@ -50,7 +51,7 @@ public class InvertCommand extends Command {
             goal = new GoalInverted(goal);
         }
         customGoalProcess.setGoalAndPath(goal);
-        logDirect(String.format("Goal: %s", goal.toString()));
+        logDirect(String.format("Goal: %s", goal.toString()), BaritoneAPI.getSettings().allowToast.value);
     }
 
     @Override
