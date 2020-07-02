@@ -18,7 +18,9 @@
 package baritone.api.utils;
 
 import baritone.api.BaritoneAPI;
+import baritone.api.utils.gui.BaritoneToast;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.toast.ToastManager;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
@@ -50,21 +52,69 @@ public interface Helper {
         // Inner text component
         final Calendar now = Calendar.getInstance();
         final boolean xd = now.get(Calendar.MONTH) == Calendar.APRIL && now.get(Calendar.DAY_OF_MONTH) <= 3;
-        LiteralText baritone = new LiteralText(xd ? "Baritoe" : BaritoneAPI.getSettings().shortBaritonePrefix.value ? "B" : "Baritone");
+        LiteralText baritone = new LiteralText(xd ? "Fabritoe" : BaritoneAPI.getSettings().shortBaritonePrefix.value ? "F" : "Fabritone");
         Style baritoneStyle = Style.EMPTY;
-        baritoneStyle = baritoneStyle.withColor(Formatting.LIGHT_PURPLE);
+        baritoneStyle = baritoneStyle.withColor(Formatting.GREEN);
         baritone.setStyle(baritoneStyle);
 
         // Outer brackets
         LiteralText prefix = new LiteralText("");
         Style prefixStyle = Style.EMPTY;
-        prefixStyle = prefixStyle.withColor(Formatting.DARK_PURPLE);
+        prefixStyle = prefixStyle.withColor(Formatting.DARK_GREEN);
         prefix.setStyle(prefixStyle);
         prefix.append("[");
         prefix.append(baritone);
         prefix.append("]");
 
         return prefix;
+    }
+
+    /**
+     * Stuff to disable normal command handling but let clients bypass settings
+     */
+    default void clientMode(boolean mode) {
+        BaritoneAPI.getSettings().prefixControl.value = !mode;
+        BaritoneAPI.getSettings().clientMode.value = mode;
+
+        if (mode) {
+            BaritoneAPI.getSettings().chatControl.reset();
+            BaritoneAPI.getSettings().chatControlAnyway.reset();
+        }
+    }
+
+    /**
+     * Send a message to display as a toast popup
+     *
+     * @param title The title to display in the popup
+     * @param message The message to display in the popup
+     */
+    default void logToast(LiteralText title, LiteralText message) {
+        ToastManager guiToast = mc.getToastManager();
+        if (BaritoneAPI.getSettings().allowToast.value) {
+            BaritoneToast.addOrUpdate(guiToast, title, message, BaritoneAPI.getSettings().toastTimer.value);
+        }
+    }
+
+    /**
+     * Send a message to display as a toast popup
+     *
+     * @param title The title to display in the popup
+     * @param message The message to display in the popup
+     */
+    default void logToast(String title, String message) {
+        LiteralText titleLine = new LiteralText(title);
+        LiteralText subTitleLine = new LiteralText(message);
+
+        logToast(titleLine, subTitleLine);
+    }
+
+    /**
+     * Send a message to display as a toast popup
+     *
+     * @param message The message to display in the popup
+     */
+    default void logToast(String message) {
+        logToast(Helper.getPrefix(), new LiteralText(message));
     }
 
     /**
@@ -82,7 +132,7 @@ public interface Helper {
     }
 
     /**
-     * Send components to chat with the [Baritone] prefix
+     * Send components to chat with the [Fabritone] prefix
      *
      * @param components The components to send
      */
@@ -119,5 +169,22 @@ public interface Helper {
      */
     default void logDirect(String message) {
         logDirect(message, Formatting.GRAY);
+    }
+
+    /**
+     * Send a message to chat regardless of chatDebug (should only be used for critically important messages, or as a
+     * direct response to a chat command)
+     * <p>
+     * Overloaded method to also sent toasts
+     *
+     * @param message The message to display in chat
+     * @param doToast Whether to log as a toast notification
+     */
+    default void logDirect(String message, boolean doToast) {
+        if (doToast) {
+            logToast(message);
+        } else {
+            logDirect(message);
+        }
     }
 }
