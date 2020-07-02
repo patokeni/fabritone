@@ -17,6 +17,7 @@
 
 package baritone.command.defaults;
 
+import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
@@ -87,7 +88,7 @@ public class ExecutionControlCommands {
                     throw new CommandInvalidStateException("Already paused");
                 }
                 paused[0] = true;
-                logDirect("Paused");
+                logDirect("Paused", BaritoneAPI.getSettings().allowToast.value);
             }
 
             @Override
@@ -121,7 +122,7 @@ public class ExecutionControlCommands {
                     throw new CommandInvalidStateException("Not paused");
                 }
                 paused[0] = false;
-                logDirect("Resumed");
+                logDirect("Resumed", BaritoneAPI.getSettings().allowToast.value);
             }
 
             @Override
@@ -148,7 +149,7 @@ public class ExecutionControlCommands {
             @Override
             public void execute(String label, IArgConsumer args) throws CommandException {
                 args.requireMax(0);
-                logDirect(String.format("Baritone is %spaused", paused[0] ? "" : "not "));
+                logDirect(String.format("Baritone is %spaused", paused[0] ? "" : "not "), BaritoneAPI.getSettings().allowToast.value);
             }
 
             @Override

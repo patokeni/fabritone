@@ -17,6 +17,7 @@
 
 package baritone.command.defaults;
 
+import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.datatypes.BlockById;
@@ -48,7 +49,7 @@ public class GotoCommand extends Command {
             args.requireMax(3);
             BetterBlockPos origin = baritone.getPlayerContext().playerFeet();
             Goal goal = args.getDatatypePost(RelativeGoal.INSTANCE, origin);
-            logDirect(String.format("Going to: %s", goal.toString()));
+            logDirect(String.format("Going to: %s", goal.toString()), BaritoneAPI.getSettings().allowToast.value);
             baritone.getCustomGoalProcess().setGoalAndPath(goal);
             return;
         }

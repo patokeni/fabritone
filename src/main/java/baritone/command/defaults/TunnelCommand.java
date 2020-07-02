@@ -17,6 +17,7 @@
 
 package baritone.command.defaults;
 
+import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
@@ -46,7 +47,7 @@ public class TunnelCommand extends Command {
             int depth = Integer.parseInt(args.getArgs().get(2).getValue());
 
             if (width < 1 || height < 2 || depth < 1 || height > 255) {
-                logDirect("Width and depth must at least be 1 block; Height must at least be 2 blocks, and cannot be greater than the build limit.");
+                logDirect("Width and depth must at least be 1 block; Height must at least be 2 blocks, and cannot be greater than the build limit.", BaritoneAPI.getSettings().allowToast.value);
                 cont = false;
             }
 
@@ -77,7 +78,7 @@ public class TunnelCommand extends Command {
                     default:
                         throw new IllegalStateException("Unexpected value: " + enumFacing);
                 }
-                logDirect(String.format("Creating a tunnel %s block(s) high, %s block(s) wide, and %s block(s) deep", height+1, width+1, depth));
+                logDirect(String.format("Creating a tunnel %s block(s) high, %s block(s) wide, and %s block(s) deep", height+1, width+1, depth), BaritoneAPI.getSettings().allowToast.value);
                 baritone.getBuilderProcess().clearArea(corner1, corner2);
             }
         } else {
@@ -86,7 +87,7 @@ public class TunnelCommand extends Command {
                     ctx.player().getHorizontalFacing()
             );
             baritone.getCustomGoalProcess().setGoalAndPath(goal);
-            logDirect(String.format("Goal: %s", goal.toString()));
+            logDirect(String.format("Goal: %s", goal.toString()), BaritoneAPI.getSettings().allowToast.value);
         }
     }
 

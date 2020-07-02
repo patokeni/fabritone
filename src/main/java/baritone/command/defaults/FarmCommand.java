@@ -17,6 +17,7 @@
 
 package baritone.command.defaults;
 
+import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.exception.CommandException;
@@ -36,7 +37,7 @@ public class FarmCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
         baritone.getFarmProcess().farm();
-        logDirect("Farming");
+        logDirect("Farming", BaritoneAPI.getSettings().allowToast.value);
     }
 
     @Override

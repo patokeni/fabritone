@@ -18,6 +18,7 @@
 package baritone.command.defaults;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.utils.SettingsUtil;
@@ -175,10 +176,10 @@ public class SetCommand extends Command {
                             FORCE_COMMAND_PREFIX + String.format("set %s %s", setting.getName(), oldValue)
                     ));
             logDirect(oldValueComponent);
-            if ((setting.getName().equals("chatControl") && !(Boolean) setting.value && !Baritone.settings().chatControlAnyway.value) ||
+            if ((setting.getName().equals("chatControl") && !(Boolean) setting.value && !Baritone.settings().chatControlAnyway.value && !BaritoneAPI.getSettings().clientMode.value) ||
                     setting.getName().equals("chatControlAnyway") && !(Boolean) setting.value && !Baritone.settings().chatControl.value) {
                 logDirect("Warning: Chat commands will no longer work. If you want to revert this change, use prefix control (if enabled) or click the old value listed above.", Formatting.RED);
-            } else if (setting.getName().equals("prefixControl") && !(Boolean) setting.value) {
+            } else if (setting.getName().equals("prefixControl") && !(Boolean) setting.value && !BaritoneAPI.getSettings().clientMode.value) {
                 logDirect("Warning: Prefixed commands will no longer work. If you want to revert this change, use chat control (if enabled) or click the old value listed above.", Formatting.RED);
             }
         }

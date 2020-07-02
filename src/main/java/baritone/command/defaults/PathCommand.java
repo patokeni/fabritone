@@ -17,6 +17,7 @@
 
 package baritone.command.defaults;
 
+import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.exception.CommandException;
@@ -40,7 +41,7 @@ public class PathCommand extends Command {
         args.requireMax(0);
         WorldScanner.INSTANCE.repack(ctx);
         customGoalProcess.path();
-        logDirect("Now pathing");
+        logDirect("Now pathing", BaritoneAPI.getSettings().allowToast.value);
     }
 
     @Override
