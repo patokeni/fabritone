@@ -202,7 +202,7 @@ public final class MemoryBehavior extends Behavior {
             return null; // other things that have contents, but can be placed adjacent without combining
         }
         for (int i = 0; i < 4; i++) {
-            BlockPos adj = in.offset(EnumFacing.byHorizontalIndex(i));
+            BlockPos adj = in.offset(EnumFacing.getHorizontal(i));
             if (bsi.get0(adj).getBlock() == block) {
                 return adj;
             }

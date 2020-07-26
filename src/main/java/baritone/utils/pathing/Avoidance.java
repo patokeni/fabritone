@@ -19,8 +19,8 @@ package baritone.utils.pathing;
 
 import baritone.Baritone;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.monster.EntityPigZombie;
@@ -29,6 +29,7 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 public class Avoidance {
@@ -74,7 +75,7 @@ public class Avoidance {
         if (mobCoeff != 1.0D) {
             ctx.world().loadedEntityList.stream()
                     .filter(entity -> entity instanceof EntityMob)
-                    .filter(entity -> (!(entity instanceof EntitySpider)) || ctx.player().getBrightness() < 0.5)
+                    .filter(entity -> (!(entity instanceof EntitySpider)) || ctx.player().getBrightness(Helper.mc.getRenderPartialTicks()) < 0.5)
                     .filter(entity -> !(entity instanceof EntityPigZombie) || ((EntityPigZombie) entity).isAngry())
                     .filter(entity -> !(entity instanceof EntityEnderman) || ((EntityEnderman) entity).isScreaming())
                     .forEach(entity -> res.add(new Avoidance(new BlockPos(entity), mobCoeff, Baritone.settings().mobAvoidanceRadius.value)));
@@ -82,7 +83,7 @@ public class Avoidance {
         return res;
     }
 
-    public void applySpherical(Long2DoubleOpenHashMap map) {
+    public void applySpherical(HashMap<Long, Double> map) {
         for (int x = -radius; x <= radius; x++) {
             for (int y = -radius; y <= radius; y++) {
                 for (int z = -radius; z <= radius; z++) {

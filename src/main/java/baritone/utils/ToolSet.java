@@ -159,7 +159,7 @@ public class ToolSet {
             return -1;
         }
 
-        float speed = item.getDestroySpeed(state);
+        float speed = item.getStrVsBlock(state);
         if (speed > 1) {
             int effLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.EFFICIENCY, item);
             if (effLevel > 0 && !item.isEmpty()) {

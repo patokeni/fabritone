@@ -30,10 +30,10 @@ public class MixinChunkProviderClient implements IChunkProviderClient {
 
     @Shadow
     @Final
-    private Long2ObjectMap<Chunk> loadedChunks;
+    private Long2ObjectMap<Chunk> chunkMapping;
 
     @Override
     public Long2ObjectMap<Chunk> loadedChunks() {
-        return this.loadedChunks;
+        return this.chunkMapping;
     }
 }

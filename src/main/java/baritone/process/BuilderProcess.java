@@ -43,7 +43,6 @@ import baritone.utils.PathingCommandContext;
 import baritone.utils.schematic.MapArtSchematic;
 import baritone.utils.schematic.SchematicSystem;
 import baritone.utils.schematic.schematica.SchematicaHelper;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.BlockAir;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
@@ -63,7 +62,7 @@ import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 public final class BuilderProcess extends BaritoneProcessHelper implements IBuilderProcess {
 
     private HashSet<BetterBlockPos> incorrectPositions;
-    private LongOpenHashSet observedCompleted; // positions that are completed even if they're out of render distance and we can't make sure right now
+    private HashSet<Long> observedCompleted; // positions that are completed even if they're out of render distance and we can't make sure right now
     private String name;
     private ISchematic realSchematic;
     private ISchematic schematic;
@@ -99,7 +98,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         this.paused = false;
         this.layer = 0;
         this.numRepeats = 0;
-        this.observedCompleted = new LongOpenHashSet();
+        this.observedCompleted = new HashSet<>();
     }
 
     public void resume() {
@@ -331,8 +330,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             case SOUTH:
             case EAST:
             case WEST:
-                double x = side.getXOffset() == 0 ? 0.5 : (1 + side.getXOffset()) / 2D;
-                double z = side.getZOffset() == 0 ? 0.5 : (1 + side.getZOffset()) / 2D;
+                double x = side.getFrontOffsetX() == 0 ? 0.5 : (1 + side.getFrontOffsetX()) / 2D;
+                double z = side.getFrontOffsetZ() == 0 ? 0.5 : (1 + side.getFrontOffsetZ()) / 2D;
                 return new Vec3d[]{new Vec3d(x, 0.25, z), new Vec3d(x, 0.75, z)};
             default: // null
                 throw new IllegalStateException();

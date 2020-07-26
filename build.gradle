@@ -32,7 +32,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
         classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
     }
 }
@@ -66,8 +66,8 @@ sourceSets {
 }
 
 minecraft {
-    version = '1.12.2'
-    mappings = 'stable_39'
+    version = '1.11.2'
+    mappings = 'stable_32'
     tweakClass = 'baritone.launch.BaritoneTweaker'
     runDir = 'run'
 

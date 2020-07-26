@@ -52,7 +52,7 @@ public interface IBuilderProcess extends IBaritoneProcess {
     boolean build(String name, File schematic, Vec3i origin);
 
     default boolean build(String schematicFile, BlockPos origin) {
-        File file = new File(new File(Minecraft.getMinecraft().gameDir, "schematics"), schematicFile);
+        File file = new File(new File(Minecraft.getMinecraft().mcDataDir, "schematics"), schematicFile);
         return build(schematicFile, file, origin);
     }
 

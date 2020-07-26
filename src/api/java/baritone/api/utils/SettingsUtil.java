@@ -47,7 +47,7 @@ import static net.minecraft.client.Minecraft.getMinecraft;
 
 public class SettingsUtil {
 
-    private static final Path SETTINGS_PATH = getMinecraft().gameDir.toPath().resolve("baritone").resolve("settings.txt");
+    private static final Path SETTINGS_PATH = getMinecraft().mcDataDir.toPath().resolve("baritone").resolve("settings.txt");
     private static final Pattern SETTING_PATTERN = Pattern.compile("^(?<setting>[^ ]+) +(?<value>.+)"); // key and value split by the first space
 
     private static boolean isComment(String line) {

@@ -80,23 +80,23 @@ public abstract class MixinEntityLivingBase extends Entity {
     }
 
     @Redirect(
-            method = "travel",
+            method = "moveEntityWithHeading",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/entity/EntityLivingBase.moveRelative(FFFF)V"
+                    target = "Lnet/minecraft/entity/EntityLivingBase;moveRelative(FFF)V"
             )
     )
-    private void travel(EntityLivingBase self, float strafe, float up, float forward, float friction) {
+    private void travel(EntityLivingBase self, float strafe, float forward, float friction) {
         // noinspection ConstantConditions
         if (!EntityPlayerSP.class.isInstance(this) || BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this) == null) {
-            moveRelative(strafe, up, forward, friction);
+            moveRelative(strafe, forward, friction);
             return;
         }
         RotationMoveEvent motionUpdateRotationEvent = new RotationMoveEvent(RotationMoveEvent.Type.MOTION_UPDATE, this.rotationYaw);
         BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this).getGameEventHandler().onPlayerRotationMove(motionUpdateRotationEvent);
         float originalYaw = this.rotationYaw;
         this.rotationYaw = motionUpdateRotationEvent.getYaw();
-        this.moveRelative(strafe, up, forward, friction);
+        this.moveRelative(strafe, forward, friction);
         this.rotationYaw = originalYaw;
     }
 }

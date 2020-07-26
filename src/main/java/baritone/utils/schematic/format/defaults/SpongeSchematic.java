@@ -19,6 +19,7 @@ package baritone.utils.schematic.format.defaults;
 
 import baritone.utils.schematic.StaticSchematic;
 import baritone.utils.type.VarInt;
+import com.google.common.base.Optional;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
@@ -28,7 +29,6 @@ import net.minecraft.util.ResourceLocation;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -146,7 +146,7 @@ public final class SpongeSchematic extends StaticSchematic {
         }
 
         private static <T extends Comparable<T>> IBlockState setPropertyValue(IBlockState state, IProperty<T> property, String value) {
-            Optional<T> parsed = property.parseValue(value).toJavaUtil();
+            Optional<T> parsed = property.parseValue(value);
             if (parsed.isPresent()) {
                 return state.withProperty(property, parsed.get());
             } else {

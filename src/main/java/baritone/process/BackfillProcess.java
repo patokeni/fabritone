@@ -58,7 +58,7 @@ public final class BackfillProcess extends BaritoneProcessHelper {
         }
         amIBreakingABlockHMMMMMMM();
         for (BlockPos pos : new ArrayList<>(blocksToReplace.keySet())) {
-            if (ctx.world().getChunk(pos) instanceof EmptyChunk) {
+            if (ctx.world().getChunkFromBlockCoords(pos) instanceof EmptyChunk) {
                 blocksToReplace.remove(pos);
             }
         }

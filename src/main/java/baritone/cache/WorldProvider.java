@@ -69,7 +69,7 @@ public class WorldProvider implements IWorldProvider, Helper {
             directory = loader.getChunkSaveLocation();
 
             // Gets the "depth" of this directory relative the the game's run directory, 2 is the location of the world
-            if (directory.toPath().relativize(mc.gameDir.toPath()).getNameCount() != 2) {
+            if (directory.toPath().relativize(mc.mcDataDir.toPath()).getNameCount() != 2) {
                 // subdirectory of the main save directory for this world
                 directory = directory.getParentFile();
             }

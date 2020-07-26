@@ -20,9 +20,9 @@ package baritone.utils;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import baritone.api.utils.Helper;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -34,7 +34,7 @@ import static org.lwjgl.opengl.GL11.*;
 public interface IRenderer {
 
     Tessellator tessellator = Tessellator.getInstance();
-    BufferBuilder buffer = tessellator.getBuffer();
+    VertexBuffer buffer = tessellator.getBuffer();
     RenderManager renderManager = Helper.mc.getRenderManager();
     Settings settings = BaritoneAPI.getSettings();
 

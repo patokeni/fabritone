@@ -19,6 +19,7 @@ package baritone.launch.mixins;
 
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.state.BlockStateContainer;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

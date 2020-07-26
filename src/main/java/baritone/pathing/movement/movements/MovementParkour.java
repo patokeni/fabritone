@@ -67,8 +67,8 @@ public class MovementParkour extends Movement {
             return;
         }
 
-        int xDiff = dir.getXOffset();
-        int zDiff = dir.getZOffset();
+        int xDiff = dir.getFrontOffsetX();
+        int zDiff = dir.getFrontOffsetZ();
         if (!MovementHelper.fullyPassable(context, x + xDiff, y, z + zDiff)) {
             // most common case at the top -- the adjacent block isn't air
             return;
@@ -159,9 +159,9 @@ public class MovementParkour extends Movement {
             return;
         }
         for (int i = 0; i < 5; i++) {
-            int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i].getXOffset();
-            int againstY = y - 1 + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i].getYOffset();
-            int againstZ = destZ + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i].getZOffset();
+            int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i].getFrontOffsetX();
+            int againstY = y - 1 + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i].getFrontOffsetY();
+            int againstZ = destZ + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i].getFrontOffsetZ();
             if (againstX == x + xDiff * 3 && againstZ == z + zDiff * 3) { // we can't turn around that fast
                 continue;
             }

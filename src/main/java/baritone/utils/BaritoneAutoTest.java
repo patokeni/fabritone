@@ -27,7 +27,7 @@ import baritone.api.utils.IPlayerContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.settings.GameSettings;
-import net.minecraft.client.tutorial.TutorialSteps;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.*;
 
@@ -71,7 +71,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
         s.ambientOcclusion = 0;
         s.clouds = 0;
         s.fancyGraphics = false;
-        s.tutorialStep = TutorialSteps.NONE;
+        s.chatVisibility = EntityPlayer.EnumChatVisibility.HIDDEN; // TODO: ???
         s.hideGUI = true;
         s.fovSetting = 30.0F;
     }

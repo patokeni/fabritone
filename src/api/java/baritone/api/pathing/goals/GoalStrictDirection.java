@@ -36,8 +36,8 @@ public class GoalStrictDirection implements Goal {
         x = origin.getX();
         y = origin.getY();
         z = origin.getZ();
-        dx = direction.getXOffset();
-        dz = direction.getZOffset();
+        dx = direction.getFrontOffsetX();
+        dz = direction.getFrontOffsetZ();
         if (dx == 0 && dz == 0) {
             throw new IllegalArgumentException(direction + "");
         }

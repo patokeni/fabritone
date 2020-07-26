@@ -31,7 +31,6 @@ import baritone.cache.CachedWorld;
 import baritone.utils.BaritoneProcessHelper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 
@@ -39,6 +38,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public final class ExploreProcess extends BaritoneProcessHelper implements IExploreProcess {
@@ -208,7 +208,7 @@ public final class ExploreProcess extends BaritoneProcessHelper implements IExpl
     private class JsonChunkFilter implements IChunkFilter {
 
         private final boolean invert; // if true, the list is interpreted as a list of chunks that are NOT explored, if false, the list is interpreted as a list of chunks that ARE explored
-        private final LongOpenHashSet inFilter;
+        private final HashSet<Long> inFilter;
         private final MyChunkPos[] positions;
 
         private JsonChunkFilter(Path path, boolean invert) throws Exception { // ioexception, json exception, etc
@@ -216,7 +216,7 @@ public final class ExploreProcess extends BaritoneProcessHelper implements IExpl
             Gson gson = new GsonBuilder().create();
             positions = gson.fromJson(new InputStreamReader(Files.newInputStream(path)), MyChunkPos[].class);
             logDirect("Loaded " + positions.length + " positions");
-            inFilter = new LongOpenHashSet();
+            inFilter = new HashSet<>();
             for (MyChunkPos mcp : positions) {
                 inFilter.add(ChunkPos.asLong(mcp.x, mcp.z));
             }
