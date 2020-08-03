@@ -501,6 +501,9 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean isFlowing(int x, int y, int z, BlockState state, BlockStateInterface bsi) {
         FluidState fluidState = state.getFluidState();
+        if (fluidState.isEmpty()) {
+            return false;
+        }
         if (fluidState.isStill()) {
             return false;
         }
