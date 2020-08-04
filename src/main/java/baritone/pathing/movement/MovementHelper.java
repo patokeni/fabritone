@@ -60,7 +60,9 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || avoidAdjacentBreaking(bsi, x + 1, y, z, false)
                 || avoidAdjacentBreaking(bsi, x - 1, y, z, false)
                 || avoidAdjacentBreaking(bsi, x, y, z + 1, false)
-                || avoidAdjacentBreaking(bsi, x, y, z - 1, false);
+                || avoidAdjacentBreaking(bsi, x, y, z - 1, false)
+                || (Baritone.settings().enableForceAvoidList.value
+                    && Baritone.settings().blocksToForceAvoid.value.contains(b));
     }
 
     static boolean avoidAdjacentBreaking(BlockStateInterface bsi, int x, int y, int z, boolean directlyAbove) {

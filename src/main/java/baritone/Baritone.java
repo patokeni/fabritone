@@ -26,6 +26,7 @@ import baritone.api.utils.IPlayerContext;
 import baritone.behavior.*;
 import baritone.cache.WorldProvider;
 import baritone.event.GameEventHandler;
+import baritone.event.LightWatchdogListener;
 import baritone.process.*;
 import baritone.selection.SelectionManager;
 import baritone.utils.*;
@@ -86,9 +87,13 @@ public class Baritone implements IBaritone {
     private WorldProvider worldProvider;
 
     public BlockStateInterface bsi;
+    private PlaceTorchProcess placeTorchProcess;
+    private LightWatchdogListener lightWatchdogListener;
 
     Baritone() {
         this.gameEventHandler = new GameEventHandler(this);
+        this.lightWatchdogListener = new LightWatchdogListener(this);
+        this.gameEventHandler.registerEventListener(lightWatchdogListener);
 
         // Define this before behaviors try and get it, or else it will be null and the builds will fail!
         this.playerContext = PrimaryPlayerContext.INSTANCE;
@@ -112,6 +117,7 @@ public class Baritone implements IBaritone {
             exploreProcess = new ExploreProcess(this);
             backfillProcess = new BackfillProcess(this);
             farmProcess = new FarmProcess(this);
+            placeTorchProcess = new PlaceTorchProcess(this);
         }
 
         this.worldProvider = new WorldProvider();
@@ -217,6 +223,14 @@ public class Baritone implements IBaritone {
                 Helper.mc.execute(() -> Helper.mc.openScreen(new GuiClick()));
             } catch (Exception ignored) {}
         }).start();
+    }
+
+    public PlaceTorchProcess getPlaceTorchProcess() {
+        return placeTorchProcess;
+    }
+
+    public LightWatchdogListener getLightWatchdog() {
+        return lightWatchdogListener;
     }
 
     public static Settings settings() {

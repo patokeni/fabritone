@@ -48,6 +48,7 @@ public class MineCommand extends Command {
         WorldScanner.INSTANCE.repack(ctx);
         logDirect(String.format("Mining %s", boms.toString()));
         baritone.getMineProcess().mine(quantity, boms.toArray(new BlockOptionalMeta[0]));
+        baritone.getLightWatchdog().startWatching();
     }
 
     @Override

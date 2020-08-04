@@ -1076,6 +1076,28 @@ public final class Settings {
     public final Setting<Boolean> desktopNotifications = new Setting<>(false);
 
     /**
+     * How many ticks between every light checking
+     */
+    public final Setting<Integer> checkLightIntervalInTicks = new Setting<>(100);
+
+    /**
+     * Attempt to place torch when current light level is under the value
+     */
+    public final Setting<Integer> lightThreshold = new Setting<>(8);
+
+    /**
+     * Place torches when current light level is low
+     */
+    public final Setting<Boolean> placeTorchWhileMining = new Setting<>(true);
+
+    /**
+     * How should torches being placed
+     */
+    public final Setting<Integer> placeTorchMode = new Setting<>(0);
+    public final Setting<Boolean> enableForceAvoidList = new Setting<>(true);
+    public final Setting<List<Block>> blocksToForceAvoid = new Setting<>(new ArrayList<>());
+
+    /**
      * A map of lowercase setting field names to their respective setting
      */
     public final Map<String, Setting<?>> byLowerName;

@@ -20,6 +20,7 @@ package baritone.api;
 import baritone.api.behavior.ILookBehavior;
 import baritone.api.behavior.IPathingBehavior;
 import baritone.api.cache.IWorldProvider;
+import baritone.api.event.ILightWatchdog;
 import baritone.api.event.listener.IEventBus;
 import baritone.api.pathing.calc.IPathingControlManager;
 import baritone.api.process.*;
@@ -137,4 +138,6 @@ public interface IBaritone {
      * Open click
      */
     void openClick();
+
+    ILightWatchdog getLightWatchdog();
 }

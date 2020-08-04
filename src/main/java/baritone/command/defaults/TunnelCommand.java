@@ -80,6 +80,7 @@ public class TunnelCommand extends Command {
                 }
                 logDirect(String.format("Creating a tunnel %s block(s) high, %s block(s) wide, and %s block(s) deep", height+1, width+1, depth), BaritoneAPI.getSettings().allowToast.value);
                 baritone.getBuilderProcess().clearArea(corner1, corner2);
+                baritone.getLightWatchdog().startWatching();
             }
         } else {
             Goal goal = new GoalStrictDirection(
@@ -87,6 +88,7 @@ public class TunnelCommand extends Command {
                     ctx.player().getHorizontalFacing()
             );
             baritone.getCustomGoalProcess().setGoalAndPath(goal);
+            baritone.getLightWatchdog().startWatching();
             logDirect(String.format("Goal: %s", goal.toString()), BaritoneAPI.getSettings().allowToast.value);
         }
     }
